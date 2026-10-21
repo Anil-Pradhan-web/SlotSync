@@ -135,6 +135,31 @@ export class SlotSyncAPI {
     return { ok: true, status: 200, data: { lockId, start: startSeat, end: endSeat, expiresAt: expiryTime } };
   }
 
+  async unlockSlot(lockId) {
+    if (this.isBackendLive) {
+      try {
+        const res = await fetch(`${this.slotLockUrl}/api/v1/slots/unlock?lockId=${encodeURIComponent(lockId)}`, {
+          method: 'POST'
+        });
+        if (res.ok) {
+          return await res.json();
+        }
+      } catch (e) {
+        console.warn('Backend unlock failed, falling back:', e);
+      }
+    }
+
+    // Local fallback
+    if (this.localLocks.has(lockId)) {
+      const lock = this.localLocks.get(lockId);
+      this.simTree.unlock(lock.startSeat, lock.endSeat);
+      this.localLocks.delete(lockId);
+      this.reaper.remove(lockId);
+      return { ok: true, released: true };
+    }
+    return { ok: false, released: false };
+  }
+
   async payWebhook(lockId, userId, startSeat, endSeat, amount, txRef) {
     if (this.isBackendLive) {
       try {
@@ -167,6 +192,86 @@ export class SlotSyncAPI {
     };
     this.localBookings.set(orderId, booking);
     return { ok: true, status: 200, data: booking };
+  }
+
+  async triggerTatkalWave(count = 72) {
+    if (this.isBackendLive) {
+      try {
+        const res = await fetch(`${this.slotLockUrl}/api/v1/slots/tatkal-wave?count=${count}`, {
+          method: 'POST'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return { ok: true, ...data };
+        }
+      } catch (e) {
+        console.warn('Backend tatkal wave call error, using DSA engine fallback:', e);
+      }
+    }
+
+    // Local fallback: Dynamic SegmentTree allocation (ZERO HARDCODING)
+    const ranges = this.simTree.findAvailableBatches(count, 4);
+    if (!ranges || ranges.length === 0) {
+      return { ok: true, exhausted: true, totalLocked: 0, totalAvailable: 0, isTrainFull: true, batches: [] };
+    }
+
+    const batches = [];
+    let totalLocked = 0;
+    for (const r of ranges) {
+      const locked = this.simTree.lock(r.start, r.end);
+      if (locked) {
+        const lockId = 'LCK_' + Math.random().toString(36).substring(2, 9).toUpperCase();
+        const userId = 'USR-TATKAL-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+        const expiryTime = Date.now() + 300000;
+        const node = { lockId, userId, startSeat: r.start, endSeat: r.end, expiryTime };
+        this.localLocks.set(lockId, node);
+        this.reaper.push(node);
+        batches.push({ lockId, userId, start: r.start, end: r.end, seats: r.seats, expiresAt: expiryTime });
+        totalLocked += r.seats;
+      }
+    }
+
+    const remaining = this.simTree.getTotalAvailable();
+    return {
+      ok: true,
+      exhausted: false,
+      totalLocked,
+      totalAvailable: remaining,
+      isTrainFull: remaining === 0,
+      batches
+    };
+  }
+
+  async triggerGhostTest() {
+    if (this.isBackendLive) {
+      try {
+        const res = await fetch(`${this.slotLockUrl}/api/v1/slots/ghost-test`, {
+          method: 'POST'
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return { ok: true, ...data };
+        }
+      } catch (e) {
+        console.warn('Backend ghost test call error, using DSA engine fallback:', e);
+      }
+    }
+
+    // Local fallback: Dynamic SegmentTree allocation (ZERO HARDCODING)
+    const ranges = this.simTree.findAvailableBatches(4, 4);
+    if (!ranges || ranges.length === 0) {
+      return { ok: false, error: 'NO_SEATS_AVAILABLE' };
+    }
+    const r = ranges[0];
+    const lockRes = await this.lockSlots('USR-GHOST-ABANDON', r.start, r.end, 8000);
+    return {
+      ok: lockRes.ok,
+      lockId: lockRes.data?.lockId,
+      start: r.start,
+      end: r.end,
+      seats: r.seats,
+      ttl: 8000
+    };
   }
 
   buildSeatMatrix(backendState) {
@@ -221,10 +326,13 @@ export class SlotSyncAPI {
   async resetAll() {
     this.localLocks.clear();
     this.localBookings.clear();
-    this.simTree = new SimpleSegmentTree(1000);
+    this.simTree = new SegmentTreeSim(1000);
     this.simTree.lock(0, 1);
     this.simTree.lock(2, 3);
     this.simTree.lock(4, 5);
+    this.localBookings.set('ORD-TATKAL-001', { start: 0, end: 1, startSeat: 0, endSeat: 1, userId: 'USR-RAHUL-SHARMA' });
+    this.localBookings.set('ORD-TATKAL-002', { start: 2, end: 3, startSeat: 2, endSeat: 3, userId: 'USR-PRIYA-VERMA' });
+    this.localBookings.set('ORD-TATKAL-003', { start: 4, end: 5, startSeat: 4, endSeat: 5, userId: 'USR-AMIT-PATEL' });
 
     if (this.isBackendLive) {
       try {

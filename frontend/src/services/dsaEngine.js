@@ -78,6 +78,32 @@ export class SegmentTreeSim {
   getTotalAvailable() {
     return this.tree[1];
   }
+
+  findAvailableBatches(targetSeats = 72, maxBatchSize = 4) {
+    const batches = [];
+    let accumulated = 0;
+    let start = -1;
+
+    for (let i = 0; i < this.size && accumulated < targetSeats; i++) {
+      const isAvail = this.query(i, i) === 1;
+      if (isAvail) {
+        if (start === -1) start = i;
+        const len = i - start + 1;
+        if (len === maxBatchSize || i === this.size - 1 || this.query(Math.min(this.size - 1, i + 1), Math.min(this.size - 1, i + 1)) === 0) {
+          batches.push({ start, end: i, seats: len });
+          accumulated += len;
+          start = -1;
+        }
+      } else {
+        if (start !== -1) {
+          batches.push({ start, end: i - 1, seats: i - start });
+          accumulated += (i - start);
+          start = -1;
+        }
+      }
+    }
+    return batches;
+  }
 }
 
 export class MinHeapTTLSim {

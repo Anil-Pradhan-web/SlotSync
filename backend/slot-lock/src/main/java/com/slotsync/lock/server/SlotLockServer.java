@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.Executors;
 
 /**
@@ -26,14 +27,20 @@ public class SlotLockServer implements AutoCloseable {
     private final HttpServer server;
     private final SlotLockEngine engine;
     private final int port;
+    private final Runnable onResetCallback;
 
-    public SlotLockServer(int port, SlotLockEngine engine) throws IOException {
+    public SlotLockServer(int port, SlotLockEngine engine, Runnable onResetCallback) throws IOException {
         this.port = port;
         this.engine = engine;
+        this.onResetCallback = onResetCallback;
         this.server = HttpServer.create(new InetSocketAddress(port), 0);
         this.server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
 
         configureRoutes();
+    }
+
+    public SlotLockServer(int port, SlotLockEngine engine) throws IOException {
+        this(port, engine, null);
     }
 
     public SlotLockServer(int port, int totalSeats) throws IOException {
@@ -47,6 +54,8 @@ public class SlotLockServer implements AutoCloseable {
         server.createContext("/api/v1/slots/lock", new LockHandler());
         server.createContext("/api/v1/slots/unlock", new UnlockHandler());
         server.createContext("/api/v1/slots/reset", new ResetHandler());
+        server.createContext("/api/v1/slots/tatkal-wave", new TatkalWaveHandler());
+        server.createContext("/api/v1/slots/ghost-test", new GhostTestHandler());
     }
 
     public void start() {
@@ -139,6 +148,13 @@ public class SlotLockServer implements AutoCloseable {
         public void handle(HttpExchange exchange) throws IOException {
             if (handlePreflight(exchange)) return;
             engine.resetAll();
+            if (onResetCallback != null) {
+                try {
+                    onResetCallback.run();
+                } catch (Exception e) {
+                    System.err.println("[RESET] Error executing reset callback: " + e.getMessage());
+                }
+            }
             sendResponse(exchange, 200, "{\"status\":\"RESET_SUCCESS\",\"availableSeats\":" + engine.getTotalAvailableSeats() + "}");
         }
     }
@@ -229,6 +245,86 @@ public class SlotLockServer implements AutoCloseable {
             boolean released = engine.releaseReservation(lockId);
             String response = String.format("{\"lockId\":\"%s\",\"released\":%b}", lockId, released);
             sendResponse(exchange, 200, response);
+        }
+    }
+
+    private class TatkalWaveHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (handlePreflight(exchange)) return;
+            if (!"POST".equalsIgnoreCase(exchange.getRequestMethod()) && !"GET".equalsIgnoreCase(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, "{\"error\":{\"code\":\"METHOD_NOT_ALLOWED\"}}");
+                return;
+            }
+
+            Map<String, String> query = parseQuery(exchange.getRequestURI().getQuery());
+            int count = Integer.parseInt(query.getOrDefault("count", "72"));
+
+            List<int[]> ranges = engine.findAvailableBatches(count, 4);
+            if (ranges.isEmpty()) {
+                sendResponse(exchange, 200, "{\"exhausted\":true,\"totalLocked\":0,\"totalAvailable\":0,\"isTrainFull\":true,\"batches\":[]}");
+                return;
+            }
+
+            StringBuilder batchesJson = new StringBuilder("[");
+            int idx = 0;
+            int totalLocked = 0;
+
+            for (int[] range : ranges) {
+                int start = range[0];
+                int end = range[1];
+                int seats = end - start + 1;
+                String userId = "USR-TATKAL-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+
+                SlotLockEngine.LockResult res = engine.reserveSlots(userId, start, end, 300000);
+                if (res.success()) {
+                    totalLocked += seats;
+                    if (idx++ > 0) batchesJson.append(",");
+                    batchesJson.append(String.format(
+                        "{\"lockId\":\"%s\",\"userId\":\"%s\",\"start\":%d,\"end\":%d,\"seats\":%d,\"expiresAt\":%d}",
+                        res.lockId(), userId, start, end, seats, res.expiresAt()
+                    ));
+                }
+            }
+            batchesJson.append("]");
+
+            int remaining = engine.getTotalAvailableSeats();
+            boolean isTrainFull = (remaining == 0);
+
+            String response = String.format(
+                "{\"exhausted\":false,\"totalLocked\":%d,\"totalAvailable\":%d,\"isTrainFull\":%b,\"batches\":%s}",
+                totalLocked, remaining, isTrainFull, batchesJson.toString()
+            );
+            sendResponse(exchange, 200, response);
+        }
+    }
+
+    private class GhostTestHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (handlePreflight(exchange)) return;
+            List<int[]> ranges = engine.findAvailableBatches(4, 4);
+            if (ranges.isEmpty()) {
+                sendResponse(exchange, 409, "{\"error\":{\"code\":\"NO_SEATS_AVAILABLE\"}}");
+                return;
+            }
+
+            int[] range = ranges.get(0);
+            int start = range[0];
+            int end = range[1];
+            int seats = end - start + 1;
+            String userId = "USR-GHOST-ABANDON";
+
+            SlotLockEngine.LockResult res = engine.reserveSlots(userId, start, end, 8000);
+            if (res.success()) {
+                String response = String.format(
+                    "{\"lockId\":\"%s\",\"userId\":\"%s\",\"start\":%d,\"end\":%d,\"seats\":%d,\"ttl\":8000}",
+                    res.lockId(), userId, start, end, seats
+                );
+                sendResponse(exchange, 200, response);
+            } else {
+                sendResponse(exchange, 409, "{\"error\":{\"code\":\"LOCK_FAILED\"}}");
+            }
         }
     }
 

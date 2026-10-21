@@ -1,5 +1,7 @@
 package com.slotsync.dsa.segmenttree;
 
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.locks.StampedLock;
 
 /**
@@ -159,6 +161,42 @@ public class SegmentTree {
 
     public int getTotalSeats() {
         return totalSeats;
+    }
+
+    /**
+     * Scans and returns contiguous chunks of available seats (up to maxBatchSize per chunk),
+     * accumulating up to targetSeats.
+     */
+    public List<int[]> findNextAvailableBatches(int targetSeats, int maxBatchSize) {
+        long stamp = lock.readLock();
+        try {
+            List<int[]> batches = new ArrayList<>();
+            int accumulated = 0;
+            int start = -1;
+
+            for (int i = 0; i < totalSeats && accumulated < targetSeats; i++) {
+                if (seatStatus[i]) {
+                    if (start == -1) {
+                        start = i;
+                    }
+                    int currentLength = i - start + 1;
+                    if (currentLength == maxBatchSize || i == totalSeats - 1 || !seatStatus[Math.min(totalSeats - 1, i + 1)]) {
+                        batches.add(new int[]{start, i});
+                        accumulated += (i - start + 1);
+                        start = -1;
+                    }
+                } else {
+                    if (start != -1) {
+                        batches.add(new int[]{start, i - 1});
+                        accumulated += (i - start);
+                        start = -1;
+                    }
+                }
+            }
+            return batches;
+        } finally {
+            lock.unlockRead(stamp);
+        }
     }
 
     private void validateRange(int left, int right) {

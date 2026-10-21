@@ -53,6 +53,10 @@ public class SlotLockEngine implements AutoCloseable {
         return segmentTree.isRangeFree(startSeat, endSeat);
     }
 
+    public java.util.List<int[]> findAvailableBatches(int targetSeats, int maxBatchSize) {
+        return segmentTree.findNextAvailableBatches(targetSeats, maxBatchSize);
+    }
+
     /**
      * Atomically locks seats and schedules 5-minute auto-expiry hold.
      * All-or-nothing guarantee: zero partial locks!
