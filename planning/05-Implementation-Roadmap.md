@@ -77,12 +77,12 @@ SlotSync/
 
 **Goal**: Create the front entrance service that stops bots and lets only real humans through.
 
-- [ ] **Step 2.1**: Create a lightweight Spring Boot Gateway application.
-- [ ] **Step 2.2**: Attach the `TokenBucket` filter to every incoming request.
-- [ ] **Step 2.3**: If someone clicks too fast, return HTTP 429 (`"Too Many Requests, please slow down!"`).
-- [ ] **Step 2.4**: Check `Idempotency-Key` so accidental double-clicks don't cause duplicate charges.
+- [x] **Step 2.1**: Create lightweight Gateway module (`api-gateway`).
+- [x] **Step 2.2**: Attach the `TokenBucket` filter to every incoming request.
+- [x] **Step 2.3**: If someone clicks too fast, return HTTP 429 (`"Too Many Requests, please slow down!"`).
+- [x] **Step 2.4**: Check `Idempotency-Key` so accidental double-clicks don't cause duplicate charges.
 
-👉 **Checkpoint 2**: Fire a bot script with 100 fast clicks; see the gateway block 90% of them smoothly.
+👉 **Checkpoint 2**: Executed `GatewayTestSuiteRunner` — verified HTTP 429 bot blocking, idempotency deduplication, and X-Trace-Id headers on real HTTP requests.
 
 ---
 
@@ -144,8 +144,8 @@ SlotSync/
 | Milestone | Module | Status | What It Delivers |
 |---|---|---|---|
 | **M1** | `dsa-engine` | ✅ Completed (100% tests pass) | Token Bucket, Segment Tree, Min-Heap, Consistent Hashing |
-| **M2** | `api-gateway` | ⏳ Up Next | Stops bots and spam-clickers at the door |
-| **M3** | `waiting-room` | ⏳ Planned | Lets in 200 people/second in a calm, orderly queue |
+| **M2** | `api-gateway` | ✅ Completed (100% tests pass) | Stops bots and spam-clickers with HTTP 429 & Idempotency |
+| **M3** | `waiting-room` | ⏳ Up Next | Lets in 200 people/second in a calm, orderly queue |
 | **M4** | `slot-lock` | ⏳ Planned | 1-microsecond seat checking & 5-minute auto-expiry |
 | **M5** | `payment-worker` | ⏳ Planned | Saves paid tickets to PostgreSQL calmly |
 | **M6** | Concurrency Stress Test | ⏳ Planned | 100k requests test proving 0 crashes and 0 double-bookings |

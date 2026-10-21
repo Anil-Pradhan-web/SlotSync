@@ -15,6 +15,7 @@
 
     <modules>
         <module>dsa-engine</module>
+        <module>api-gateway</module>
     </modules>
 
     <properties>
