@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.slotsync</groupId>
+        <artifactId>slotsync-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>payment-worker</artifactId>
+    <packaging>jar</packaging>
+
+    <name>SlotSync — Payment & Settlement Worker</name>
+    <description>Asynchronous payment reconciliation, SQL booking persistence, and ticket generation</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.slotsync</groupId>
+            <artifactId>dsa-engine</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.slotsync</groupId>
+            <artifactId>slot-lock</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

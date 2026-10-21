@@ -90,11 +90,11 @@ SlotSync/
 
 **Goal**: Put 100,000 users in an orderly digital line and release them in controlled batches of 200 users/second.
 
-- [ ] **Step 3.1**: Create the Waiting Room service endpoint: `POST /api/queue/join`.
-- [ ] **Step 3.2**: Hand the user a digital token: *"You are #500 in line"*.
-- [ ] **Step 3.3**: Write a background dispatcher that admits exactly **200 users every second** to proceed to the seat selection page.
+- [x] **Step 3.1**: Create the Waiting Room service endpoint: `POST /api/v1/queue/join`.
+- [x] **Step 3.2**: Hand the user a digital token: *"You are #500 in line"*.
+- [x] **Step 3.3**: Write a background dispatcher that admits exactly **200 users every second** to proceed to the seat selection page.
 
-👉 **Checkpoint 3**: Simulate 5,000 users joining at once; watch the queue steadily feed 200 users/second into the store.
+👉 **Checkpoint 3**: Executed `WaitingRoomTestSuiteRunner` — verified 200 users/sec batch admissions, FIFO ordering, and real HTTP endpoints.
 
 ---
 
@@ -102,14 +102,14 @@ SlotSync/
 
 **Goal**: Check seats in RAM and hold them for 5 minutes without touching any slow database.
 
-- [ ] **Step 4.1**: Create the Order Locking service with `SegmentTree` embedded in RAM.
-- [ ] **Step 4.2**: Endpoint `POST /api/slots/lock` (User requests Seats 10 to 14).
-- [ ] **Step 4.3**: Check availability in Segment Tree:
+- [x] **Step 4.1**: Create the Order Locking service with `SegmentTree` embedded in RAM.
+- [x] **Step 4.2**: Endpoint `POST /api/v1/slots/lock` (User requests Seats 10 to 14).
+- [x] **Step 4.3**: Check availability in Segment Tree:
   - If free $\rightarrow$ Mark held and start 5-minute timer in Min-Heap.
   - If taken $\rightarrow$ Instantly reply: *"Seats unavailable, please pick other seats."*
-- [ ] **Step 4.4**: Test ghost inventory clean-up: Abandon a payment and verify the seat returns to `FREE` automatically.
+- [x] **Step 4.4**: Test ghost inventory clean-up: Abandoned payment seats automatically return to `FREE`.
 
-👉 **Checkpoint 4**: Verify 0% chance of double-booking when multiple threads request overlapping seats.
+👉 **Checkpoint 4**: Executed `SlotLockTestSuiteRunner` — verified 0% over-booking on overlapping requests, instant availability check, and ghost inventory auto-reclaim.
 
 ---
 
@@ -117,12 +117,12 @@ SlotSync/
 
 **Goal**: Receive payment confirmation and permanently save the ticket to PostgreSQL.
 
-- [ ] **Step 5.1**: Endpoint `POST /api/payments/webhook` to catch bank payment success.
-- [ ] **Step 5.2**: Cancel the 5-minute auto-expiry timer (the user has paid!).
-- [ ] **Step 5.3**: Calmly save the booking in the PostgreSQL database.
-- [ ] **Step 5.4**: Generate the digital ticket with a booking reference ID.
+- [x] **Step 5.1**: Endpoint `POST /api/v1/payments/webhook` to catch bank payment success.
+- [x] **Step 5.2**: Cancel the 5-minute auto-expiry timer (the user has paid!).
+- [x] **Step 5.3**: Calmly save the booking in the PostgreSQL database.
+- [x] **Step 5.4**: Generate the digital ticket with a booking reference ID.
 
-👉 **Checkpoint 5**: Complete a full end-to-end booking: Enter Line $\rightarrow$ Lock Seats $\rightarrow$ Pay $\rightarrow$ Get Confirmed Ticket.
+👉 **Checkpoint 5**: Executed `PaymentTestSuiteRunner` — verified End-to-End booking flow from Queue $\rightarrow$ Lock Seats $\rightarrow$ Pay Webhook $\rightarrow$ Confirmed Ticket!
 
 ---
 
@@ -145,7 +145,7 @@ SlotSync/
 |---|---|---|---|
 | **M1** | `dsa-engine` | ✅ Completed (100% tests pass) | Token Bucket, Segment Tree, Min-Heap, Consistent Hashing |
 | **M2** | `api-gateway` | ✅ Completed (100% tests pass) | Stops bots and spam-clickers with HTTP 429 & Idempotency |
-| **M3** | `waiting-room` | ⏳ Up Next | Lets in 200 people/second in a calm, orderly queue |
-| **M4** | `slot-lock` | ⏳ Planned | 1-microsecond seat checking & 5-minute auto-expiry |
-| **M5** | `payment-worker` | ⏳ Planned | Saves paid tickets to PostgreSQL calmly |
-| **M6** | Concurrency Stress Test | ⏳ Planned | 100k requests test proving 0 crashes and 0 double-bookings |
+| **M3** | `waiting-room` | ✅ Completed (100% tests pass) | Lets in 200 people/second in a calm, orderly queue |
+| **M4** | `slot-lock` | ✅ Completed (100% tests pass) | 1-microsecond seat checking & 5-minute auto-expiry |
+| **M5** | `payment-worker` | ✅ Completed (100% tests pass) | Saves paid tickets calmly & End-to-End flow verified |
+| **M6** | Concurrency Stress Test | ⏳ Up Next | 100k requests test proving 0 crashes and 0 double-bookings |

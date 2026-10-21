@@ -16,6 +16,9 @@
     <modules>
         <module>dsa-engine</module>
         <module>api-gateway</module>
+        <module>waiting-room</module>
+        <module>slot-lock</module>
+        <module>payment-worker</module>
     </modules>
 
     <properties>
