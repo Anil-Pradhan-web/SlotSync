@@ -77,7 +77,7 @@ export class SlotSyncAPI {
     };
   }
 
-  async joinQueue(userId = 'USR-PASSENGER-ME') {
+  async joinQueue(userId = 'USR-PASSENGER-ME', ip = '127.0.0.1') {
     if (this.isBackendLive) {
       try {
         const res = await fetch(`${this.gatewayUrl}/api/v1/queue/join`, {
@@ -85,6 +85,7 @@ export class SlotSyncAPI {
           headers: {
             'Content-Type': 'application/json',
             'X-User-Id': userId,
+            'X-Forwarded-For': ip,
             'X-Idempotency-Key': 'IDEM_' + userId + '_' + Date.now()
           },
           body: JSON.stringify({ userId })
@@ -172,6 +173,8 @@ export class SlotSyncAPI {
     const states = [];
     const activeLocks = backendState?.activeLocks || Array.from(this.localLocks.values());
     const seedBooked = backendState?.seedBooked || [[0, 1], [2, 3], [4, 5]];
+    const localBooked = Array.from(this.localBookings.values()).map(b => [b.start, b.end]);
+    const allBooked = [...seedBooked, ...localBooked];
 
     for (let i = 0; i < 1000; i++) {
       const coachIndex = Math.floor(i / 72) + 1;
@@ -182,15 +185,15 @@ export class SlotSyncAPI {
       let status = 'AVAILABLE';
       let lockInfo = null;
 
-      // Check booked
-      for (const range of seedBooked) {
+      // Check booked (Strictly Red)
+      for (const range of allBooked) {
         if (i >= range[0] && i <= range[1]) {
           status = 'BOOKED';
           break;
         }
       }
 
-      // Check locked
+      // Check locked (5-Min Hold Orange/Yellow)
       if (status !== 'BOOKED') {
         for (const lock of activeLocks) {
           if (i >= lock.startSeat && i <= lock.endSeat) {
@@ -213,6 +216,23 @@ export class SlotSyncAPI {
       });
     }
     return states;
+  }
+
+  async resetAll() {
+    this.localLocks.clear();
+    this.localBookings.clear();
+    this.simTree = new SimpleSegmentTree(1000);
+    this.simTree.lock(0, 1);
+    this.simTree.lock(2, 3);
+    this.simTree.lock(4, 5);
+
+    if (this.isBackendLive) {
+      try {
+        await fetch(`${this.slotLockUrl}/api/v1/slots/reset`, { method: 'POST' });
+      } catch (e) {
+        console.warn('Backend reset call error:', e);
+      }
+    }
   }
 
   getBerthType(num) {

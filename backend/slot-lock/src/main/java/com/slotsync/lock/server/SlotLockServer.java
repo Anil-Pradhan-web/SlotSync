@@ -14,6 +14,7 @@ import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
@@ -45,6 +46,7 @@ public class SlotLockServer implements AutoCloseable {
         server.createContext("/api/v1/slots/availability", new AvailabilityHandler());
         server.createContext("/api/v1/slots/lock", new LockHandler());
         server.createContext("/api/v1/slots/unlock", new UnlockHandler());
+        server.createContext("/api/v1/slots/reset", new ResetHandler());
     }
 
     public void start() {
@@ -110,15 +112,34 @@ public class SlotLockServer implements AutoCloseable {
             }
             locksJson.append("]");
 
+            List<int[]> bookedList = engine.getConfirmedBookedRanges();
+            StringBuilder bookedJson = new StringBuilder("[");
+            int bIdx = 0;
+            for (int[] range : bookedList) {
+                if (bIdx++ > 0) bookedJson.append(",");
+                bookedJson.append(String.format("[%d,%d]", range[0], range[1]));
+            }
+            bookedJson.append("]");
+
             String json = String.format(
-                "{\"totalSeats\":%d,\"availableSeats\":%d,\"occupiedSeats\":%d,\"ghostSaved\":%d,\"activeLocks\":%s,\"seedBooked\":[[0,1],[2,3],[4,5]]}",
+                "{\"totalSeats\":%d,\"availableSeats\":%d,\"occupiedSeats\":%d,\"ghostSaved\":%d,\"activeLocks\":%s,\"seedBooked\":%s}",
                 engine.getTotalSeats(),
                 engine.getTotalAvailableSeats(),
                 engine.getTotalSeats() - engine.getTotalAvailableSeats(),
                 engine.getAutoReapedCount(),
-                locksJson.toString()
+                locksJson.toString(),
+                bookedJson.toString()
             );
             sendResponse(exchange, 200, json);
+        }
+    }
+
+    private class ResetHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (handlePreflight(exchange)) return;
+            engine.resetAll();
+            sendResponse(exchange, 200, "{\"status\":\"RESET_SUCCESS\",\"availableSeats\":" + engine.getTotalAvailableSeats() + "}");
         }
     }
 

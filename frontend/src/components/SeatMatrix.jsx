@@ -132,7 +132,9 @@ export default function SeatMatrix({ seatsData, selectedSeats, onSelectRange, on
                 {seats.map(seat => {
                   const isSelected = selectedSet.has(seat.seatNumber);
                   let stateClass = seat.status.toLowerCase();
-                  if (isSelected) stateClass = 'selected';
+                  if (isSelected && seat.status === 'AVAILABLE') {
+                    stateClass = 'selected';
+                  }
 
                   return (
                     <div

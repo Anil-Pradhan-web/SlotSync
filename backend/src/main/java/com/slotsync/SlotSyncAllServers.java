@@ -46,8 +46,7 @@ public class SlotSyncAllServers {
 
             // Mark existing booked seats in the Segment Tree
             for (Booking b : bookingRepo.findAll()) {
-                lockEngine.reserveSlots(b.getUserId(), b.getStartSeat(), b.getEndSeat(), 86400000L * 365);
-                lockEngine.confirmReservation(b.getLockId());
+                lockEngine.seedBookedRange(b.getStartSeat(), b.getEndSeat());
             }
 
             // 3. Start Microservice 2: Virtual Waiting Room (Port 8081)

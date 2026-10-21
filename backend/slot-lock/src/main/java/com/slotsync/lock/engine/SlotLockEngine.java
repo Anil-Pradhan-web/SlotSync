@@ -20,12 +20,16 @@ public class SlotLockEngine implements AutoCloseable {
     private final MinHeapTTLReaper ttlReaper;
     private final AtomicInteger expiredAutoReleaseCount = new AtomicInteger(0);
 
+    private final java.util.Map<String, LockNode> activeReservations = new java.util.concurrent.ConcurrentHashMap<>();
+    private final java.util.List<int[]> confirmedBookings = new java.util.concurrent.CopyOnWriteArrayList<>();
+
     public record LockResult(boolean success, String lockId, int startSeat, int endSeat, long expiresAt, String message) {}
 
     public SlotLockEngine(int totalSeats, Consumer<LockNode> onExpiredListener) {
         this.segmentTree = new SegmentTree(totalSeats);
         this.ttlReaper = new MinHeapTTLReaper(expiredNode -> {
             // Auto-reclaim seats into Segment Tree when payment expires!
+            activeReservations.remove(expiredNode.getLockId());
             segmentTree.releaseRange(expiredNode.getStartSeat(), expiredNode.getEndSeat());
             expiredAutoReleaseCount.incrementAndGet();
             if (onExpiredListener != null) {
@@ -61,15 +65,21 @@ public class SlotLockEngine implements AutoCloseable {
 
         String lockId = "lck_" + UUID.randomUUID().toString().replace("-", "").substring(0, 12);
         LockNode node = new LockNode(lockId, userId, startSeat, endSeat, ttlMillis);
+        activeReservations.put(lockId, node);
         ttlReaper.registerLock(node);
 
         return new LockResult(true, lockId, startSeat, endSeat, node.getExpiryTimestamp(), "LOCKED_AWAITING_PAYMENT");
     }
 
     /**
-     * Confirms booking upon payment success, cancelling the auto-expiry timer.
+     * Confirms booking upon payment success, cancelling the auto-expiry timer
+     * and recording the seat range into confirmed bookings.
      */
     public boolean confirmReservation(String lockId) {
+        LockNode node = activeReservations.remove(lockId);
+        if (node != null) {
+            confirmedBookings.add(new int[]{node.getStartSeat(), node.getEndSeat()});
+        }
         return ttlReaper.confirmLock(lockId);
     }
 
@@ -77,7 +87,29 @@ public class SlotLockEngine implements AutoCloseable {
      * Voluntarily cancels hold, immediately releasing seats back into pool.
      */
     public boolean releaseReservation(String lockId) {
+        activeReservations.remove(lockId);
         return ttlReaper.cancelLock(lockId);
+    }
+
+    public void seedBookedRange(int startSeat, int endSeat) {
+        segmentTree.lockRange(startSeat, endSeat);
+        confirmedBookings.add(new int[]{startSeat, endSeat});
+    }
+
+    public java.util.List<int[]> getConfirmedBookedRanges() {
+        return confirmedBookings;
+    }
+
+    public void resetAll() {
+        for (String lockId : new java.util.ArrayList<>(activeReservations.keySet())) {
+            releaseReservation(lockId);
+        }
+        activeReservations.clear();
+        confirmedBookings.clear();
+        segmentTree.releaseRange(0, segmentTree.getTotalSeats() - 1);
+        seedBookedRange(0, 1);
+        seedBookedRange(2, 3);
+        seedBookedRange(4, 5);
     }
 
     public int getTotalAvailableSeats() {
