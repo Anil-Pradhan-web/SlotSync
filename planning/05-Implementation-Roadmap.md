@@ -4,9 +4,60 @@ Building SlotSync is broken down into **6 simple, easy-to-follow steps (Mileston
 
 ---
 
+## 📂 Microservices Project Structure
+
+We follow a **Spring Boot Multi-Module Maven** pattern where each service has a clear, relatable purpose and `dsa-engine` is shared across services:
+
+```
+SlotSync/
+├── planning/             <-- All architectural specs & design docs
+├── README.md             <-- High-level overview & documentation
+├── pom.xml               <-- Root Maven Parent POM
+│
+├── dsa-engine/           <-- 🧠 Milestone 1: The 4 Core Algorithms (TokenBucket, SegmentTree, MinHeap, HashRing)
+│   ├── pom.xml
+│   └── src/
+│       ├── main/java/com/slotsync/dsa/
+│       │   ├── ratelimiter/TokenBucket.java
+│       │   ├── segmenttree/SegmentTree.java
+│       │   ├── ttl/MinHeapTTLReaper.java
+│       │   └── hashring/ConsistentHashRing.java
+│       └── test/java/com/slotsync/dsa/...
+│
+├── api-gateway/          <-- 🛡️ Milestone 2: Worker 1 (Stops bots, IP rate limiting & idempotency)
+│   ├── pom.xml
+│   └── src/
+│       └── main/
+│           ├── java/com/slotsync/gateway/...
+│           └── resources/application.yml
+│
+├── waiting-room/         <-- 🎟️ Milestone 3: Worker 2 (Virtual queue: smooth 200 users/sec admission)
+│   ├── pom.xml
+│   └── src/
+│       └── main/
+│           ├── java/com/slotsync/waitingroom/...
+│           └── resources/application.yml
+│
+├── slot-lock/            <-- 🪑 Milestone 4: Worker 3 (Fast RAM seat reservation & 5-min auto-expiry)
+│   ├── pom.xml
+│   └── src/
+│       └── main/
+│           ├── java/com/slotsync/lock/...
+│           └── resources/application.yml
+│
+└── payment-worker/       <-- 💳 Milestone 5: Worker 4 (Background bank webhook & ticket save to DB)
+    ├── pom.xml
+    └── src/
+        └── main/
+            ├── java/com/slotsync/payment/...
+            └── resources/application.yml
+```
+
+---
+
 ## 🛠️ Milestone 1: Build the 4 Core DSA Tools (Java)
 
-**Goal**: Build and test the 4 brain algorithms in pure Java before adding any web servers.
+**Goal**: Build and test the 4 brain algorithms in pure Java inside `dsa-engine` before adding any web servers.
 
 - [ ] **Step 1.1**: Setup the Java project with Maven (Java 21).
 - [ ] **Step 1.2**: Write `TokenBucket.java` (The bot-stopping guard).
@@ -90,11 +141,11 @@ Building SlotSync is broken down into **6 simple, easy-to-follow steps (Mileston
 
 ## Summary Checklist
 
-| Milestone | Component | What It Delivers |
+| Milestone | Module | What It Delivers |
 |---|---|---|
-| **M1** | Pure Java DSA | Token Bucket, Segment Tree, Min-Heap, Consistent Hashing |
-| **M2** | Gateway | Stops bots and spam-clickers at the door |
-| **M3** | Waiting Room | Lets in 200 people/second in a calm, orderly queue |
-| **M4** | Seat Counter | 1-microsecond seat checking & 5-minute auto-expiry |
-| **M5** | Bank Clerk | Saves paid tickets to PostgreSQL calmly |
-| **M6** | Stress Test | 100k requests test proving 0 crashes and 0 double-bookings |
+| **M1** | `dsa-engine` | Token Bucket, Segment Tree, Min-Heap, Consistent Hashing |
+| **M2** | `api-gateway` | Stops bots and spam-clickers at the door |
+| **M3** | `waiting-room` | Lets in 200 people/second in a calm, orderly queue |
+| **M4** | `slot-lock` | 1-microsecond seat checking & 5-minute auto-expiry |
+| **M5** | `payment-worker` | Saves paid tickets to PostgreSQL calmly |
+| **M6** | Concurrency Stress Test | 100k requests test proving 0 crashes and 0 double-bookings |
