@@ -174,7 +174,7 @@ export default function BookingModal({
               }}
             >
               <div><span style={{ color: 'var(--text-muted)' }}>PNR / Order:</span> <strong style={{ color: 'var(--color-cyan-glow)' }}>{activeBooking.orderId}</strong></div>
-              <div><span style={{ color: 'var(--text-muted)' }}>Berths:</span> <strong>Seats #{activeBooking.startSeat + 1} to #{activeBooking.endSeat + 1}</strong></div>
+              <div><span style={{ color: 'var(--text-muted)' }}>Berths:</span> <strong>Seats #{(activeBooking.start ?? activeBooking.startSeat ?? 0) + 1} to #{(activeBooking.end ?? activeBooking.endSeat ?? 0) + 1}</strong></div>
               <div><span style={{ color: 'var(--text-muted)' }}>Train:</span> 12301 Rajdhani Express (Coach S1)</div>
               <div><span style={{ color: 'var(--text-muted)' }}>Txn Ref:</span> <span style={{ color: 'var(--status-available)' }}>{activeBooking.transactionRef}</span></div>
             </div>
