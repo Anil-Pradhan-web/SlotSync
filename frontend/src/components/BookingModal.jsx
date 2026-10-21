@@ -48,7 +48,7 @@ export default function BookingModal({
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h3 className="modal-title">Tatkal Reservation Flow</h3>
+          <h3 className="modal-title">🎟️ Ticket Booking &amp; Payment</h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
 
@@ -56,11 +56,11 @@ export default function BookingModal({
         <div className="booking-stepper">
           <div className={`step-item ${step === 1 ? 'active' : step > 1 ? 'done' : ''}`}>
             <div className="step-circle">1</div>
-            <span className="step-label">Waiting Room</span>
+            <span className="step-label">Token Line</span>
           </div>
           <div className={`step-item ${step === 2 ? 'active' : step > 2 ? 'done' : ''}`}>
             <div className="step-circle">2</div>
-            <span className="step-label">5-Min Lock</span>
+            <span className="step-label">5-Min Hold</span>
           </div>
           <div className={`step-item ${step === 3 ? 'active' : ''}`}>
             <div className="step-circle">3</div>
@@ -81,9 +81,9 @@ export default function BookingModal({
                 boxShadow: '0 0 15px var(--color-purple)'
               }}
             ></div>
-            <h4 style={{ fontSize: '1.05rem', marginBottom: '0.5rem' }}>Entering Virtual Waiting Room...</h4>
+            <h4 style={{ fontSize: '1.05rem', marginBottom: '0.5rem' }}>Line mein aapka number aa raha hai...</h4>
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Batch dispatcher is metering admission at 200 users/second to protect downstream locks from overloading.
+              Server ko crash hone se bacha kar fair entry de rahe hain. 1 second me aapka lock lag raha hai...
             </p>
           </div>
         )}
@@ -93,7 +93,7 @@ export default function BookingModal({
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div>
-                <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Reserved Berths</div>
+                <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Aapki Selected Seats</div>
                 <strong style={{ color: 'var(--color-cyan-glow)' }}>
                   {selectedSeats.length === 1 ? `Seat #${startSeat}` : `Seats #${startSeat} - #${endSeat}`} (Rajdhani Express)
                 </strong>
@@ -107,10 +107,10 @@ export default function BookingModal({
             <div className="modal-timer-box">
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--status-locked)', fontWeight: 700 }}>
-                  TEMPORARY HOLD TIMER (MIN-HEAP TTL)
+                  ⏱️ 5-MINUTE SEAT HOLD TIMER
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  Pay before expiration to prevent ghost inventory release
+                  Kripya timer khatam hone se pehle pay karein, warna seats automatically dusre passengers ke liye free ho jayengi.
                 </div>
               </div>
               <div className="timer-countdown">{countdown}</div>
@@ -124,10 +124,10 @@ export default function BookingModal({
                 disabled={isProcessingPay}
               >
                 <span>💳</span>
-                <span>{isProcessingPay ? 'Processing Bank Webhook...' : `Pay ₹${fare.toLocaleString('en-IN')} via Instant UPI`}</span>
+                <span>{isProcessingPay ? 'Confirming Payment...' : `Pay ₹${fare.toLocaleString('en-IN')} via Instant UPI`}</span>
               </button>
               <button className="btn btn-secondary" style={{ width: '100%' }} onClick={onClose}>
-                <span>Release & Cancel Hold</span>
+                <span>Cancel & Free Seats</span>
               </button>
             </div>
           </div>
@@ -153,9 +153,9 @@ export default function BookingModal({
             >
               ✓
             </div>
-            <h4 style={{ fontSize: '1.15rem', color: '#fff', marginBottom: '0.25rem' }}>Booking Confirmed & Persisted!</h4>
+            <h4 style={{ fontSize: '1.15rem', color: '#fff', marginBottom: '0.25rem' }}>Booking Confirmed!</h4>
             <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '1.25rem' }}>
-              Durably written to disk WAL and permanent database ledger. Zero double-booking audit verified.
+              Ticket confirm ho gayi aur database me securely save ho chuki hai. Zero double-booking guaranteed.
             </p>
 
             <div
@@ -181,7 +181,7 @@ export default function BookingModal({
 
             <button className="btn btn-primary" style={{ width: '100%' }} onClick={onDownload}>
               <span>📥</span>
-              <span>Download Digital Boarding Pass</span>
+              <span>Download Ticket</span>
             </button>
           </div>
         )}

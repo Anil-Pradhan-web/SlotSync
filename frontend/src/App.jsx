@@ -346,9 +346,9 @@ Persistence:   WAL Disk Log & Permanent SQL Database Verified
       </div>
 
       <footer className="app-footer">
-        <div><strong>SlotSync Engine</strong> · Designed for 100,000+ Concurrent Flash-Sale Requests</div>
+        <div><strong>SlotSync</strong> · High-Speed Tatkal Ticket Booking with Zero Double-Booking</div>
         <div style={{ fontFamily: 'var(--font-mono)', fontSize: '0.75rem' }}>
-          React 19 + Vite · SegmentTree · Min-Heap TTL · TokenBucket · SQL WAL
+          High-Performance Java Backend + React Dashboard · Crash-Proof Concurrency
         </div>
       </footer>
     </>

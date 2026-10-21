@@ -84,19 +84,19 @@ export default function SeatMatrix({ seatsData, selectedSeats, onSelectRange, on
       <div className="matrix-header">
         <div>
           <h2 className="matrix-title">
-            <span>Train Seat Matrix</span>
-            <span className="brand-badge">O(log N) SEGMENT TREE</span>
+            <span>Train Coach Seats</span>
+            <span className="brand-badge">INSTANT LOCK</span>
           </h2>
           <p className="matrix-subtitle">
-            Click 1 or 2 seats to select a contiguous block (e.g. Seat 45 to 48) for instant lock &amp; booking.
+            Seat chuno: Pehle 1st seat aur fir aakhiri seat par click karke poori family ke liye sath book karo.
           </p>
         </div>
 
         <div className="seat-legend">
-          <div className="legend-item"><span className="legend-dot available"></span> Free</div>
+          <div className="legend-item"><span className="legend-dot available"></span> Available (Khali)</div>
           <div className="legend-item"><span className="legend-dot selected"></span> Selected</div>
           <div className="legend-item"><span className="legend-dot locked"></span> 5-Min Hold</div>
-          <div className="legend-item"><span className="legend-dot booked"></span> Confirmed</div>
+          <div className="legend-item"><span className="legend-dot booked"></span> Booked</div>
         </div>
       </div>
 

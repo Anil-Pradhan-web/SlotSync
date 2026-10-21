@@ -21,7 +21,7 @@ export default function Header({ isBackendLive }) {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <h1 className="brand-title">SlotSync</h1>
-              <span className="brand-badge">CONCURRENCY ENGINE</span>
+              <span className="brand-badge">⚡ HIGH-SPEED BOOKING</span>
             </div>
           </div>
         </div>
@@ -29,7 +29,7 @@ export default function Header({ isBackendLive }) {
         <div className="train-info-pill">
           <span className="train-status-dot"></span>
           <span className="train-title">Rajdhani Express 12301</span>
-          <span className="train-route">NDLS ➔ HWH · 1,000 Seats (Tatkal Quota)</span>
+          <span className="train-route">NDLS ➔ HWH · 1,000 Tatkal Seats</span>
         </div>
 
         <div className="header-actions">
@@ -42,7 +42,7 @@ export default function Header({ isBackendLive }) {
               className="train-status-dot" 
               style={{ background: isBackendLive ? '#10b981' : '#8b5cf6' }}
             ></span>
-            <span>{isBackendLive ? 'Backend Live (Port 8080)' : 'High-Fidelity DSA Sim'}</span>
+            <span>{isBackendLive ? '🟢 Backend Live' : '🟣 Demo Mode'}</span>
           </div>
         </div>
       </div>

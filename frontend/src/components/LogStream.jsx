@@ -14,17 +14,17 @@ export default function LogStream({ logs }) {
       <div className="panel-title">
         <div className="panel-icon-title">
           <span>📡</span>
-          <span>Live Engine Event Stream</span>
+          <span>Live Activity Log</span>
         </div>
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.7rem', color: 'var(--status-available)' }}>
-          STREAMING
+          REAL-TIME
         </span>
       </div>
 
       <div className="log-drawer">
         <div className="log-drawer-header">
-          <span>SYSTEM KERNEL LOG</span>
-          <span>MICROSECOND RESOLUTION</span>
+          <span>SERVER EVENTS</span>
+          <span>TIMESTAMPED LOG</span>
         </div>
 
         <div ref={streamRef} className="log-stream">

@@ -6,7 +6,7 @@ export default function Simulators({ onSimulateRush, onSimulateBots, onSimulateG
       <div className="panel-title">
         <div className="panel-icon-title">
           <span>🎮</span>
-          <span>Flash-Sale Simulators</span>
+          <span>Live Test Buttons</span>
         </div>
         <span className="brand-badge">INTERACTIVE</span>
       </div>
@@ -19,17 +19,17 @@ export default function Simulators({ onSimulateRush, onSimulateBots, onSimulateG
 
         <button className="btn btn-danger" onClick={onSimulateBots}>
           <span>🛡️</span>
-          <span>Launch 500-Bot Scraper Attack</span>
+          <span>Block 500 Fake Bots (Security Test)</span>
         </button>
 
         <button className="btn btn-secondary" onClick={onSimulateGhost}>
           <span>⏱️</span>
-          <span>Simulate Ghost Inventory TTL</span>
+          <span>Auto-Cancel Unpaid Seats (8s Timer)</span>
         </button>
 
         <button className="btn btn-secondary" style={{ borderStyle: 'dashed' }} onClick={onReset}>
           <span>🔄</span>
-          <span>Reset & Re-Seed 1,000 Seats</span>
+          <span>Reset Train (Clear All & Start Fresh)</span>
         </button>
       </div>
     </div>
