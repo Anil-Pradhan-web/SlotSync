@@ -55,7 +55,6 @@ public class SlotLockServer implements AutoCloseable {
         server.createContext("/api/v1/slots/unlock", new UnlockHandler());
         server.createContext("/api/v1/slots/reset", new ResetHandler());
         server.createContext("/api/v1/slots/tatkal-wave", new TatkalWaveHandler());
-        server.createContext("/api/v1/slots/ghost-test", new GhostTestHandler());
     }
 
     public void start() {
@@ -131,11 +130,19 @@ public class SlotLockServer implements AutoCloseable {
             bookedJson.append("]");
 
             String json = String.format(
-                "{\"totalSeats\":%d,\"availableSeats\":%d,\"occupiedSeats\":%d,\"ghostSaved\":%d,\"activeLocks\":%s,\"seedBooked\":%s}",
+                "{\"totalSeats\":%d,\"availableSeats\":%d,\"occupiedSeats\":%d,\"ghostSaved\":%d," +
+                "\"trainInfo\":{\"trainNumber\":\"%s\",\"trainName\":\"%s\",\"sourceStation\":\"%s\",\"destinationStation\":\"%s\",\"route\":\"%s\",\"basePrice\":%.2f}," +
+                "\"activeLocks\":%s,\"seedBooked\":%s}",
                 engine.getTotalSeats(),
                 engine.getTotalAvailableSeats(),
                 engine.getTotalSeats() - engine.getTotalAvailableSeats(),
                 engine.getAutoReapedCount(),
+                engine.getTrainNumber(),
+                engine.getTrainName(),
+                engine.getSourceStation(),
+                engine.getDestinationStation(),
+                engine.getRoute(),
+                engine.getBasePrice(),
                 locksJson.toString(),
                 bookedJson.toString()
             );
@@ -299,34 +306,6 @@ public class SlotLockServer implements AutoCloseable {
         }
     }
 
-    private class GhostTestHandler implements HttpHandler {
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            if (handlePreflight(exchange)) return;
-            List<int[]> ranges = engine.findAvailableBatches(4, 4);
-            if (ranges.isEmpty()) {
-                sendResponse(exchange, 409, "{\"error\":{\"code\":\"NO_SEATS_AVAILABLE\"}}");
-                return;
-            }
-
-            int[] range = ranges.get(0);
-            int start = range[0];
-            int end = range[1];
-            int seats = end - start + 1;
-            String userId = "USR-GHOST-ABANDON";
-
-            SlotLockEngine.LockResult res = engine.reserveSlots(userId, start, end, 8000);
-            if (res.success()) {
-                String response = String.format(
-                    "{\"lockId\":\"%s\",\"userId\":\"%s\",\"start\":%d,\"end\":%d,\"seats\":%d,\"ttl\":8000}",
-                    res.lockId(), userId, start, end, seats
-                );
-                sendResponse(exchange, 200, response);
-            } else {
-                sendResponse(exchange, 409, "{\"error\":{\"code\":\"LOCK_FAILED\"}}");
-            }
-        }
-    }
 
     private int extractIntFromJson(String json, String key, int def) {
         String pattern = "\"" + key + "\":";

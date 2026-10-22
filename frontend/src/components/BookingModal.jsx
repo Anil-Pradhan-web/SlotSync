@@ -6,6 +6,7 @@ export default function BookingModal({
   selectedSeats,
   activeLock,
   activeBooking,
+  trainInfo,
   onClose,
   onPay,
   onDownload
@@ -14,7 +15,7 @@ export default function BookingModal({
   const [isProcessingPay, setIsProcessingPay] = useState(false);
 
   useEffect(() => {
-    if (!isOpen || step !== 2 || !activeLock) return;
+    if (!isOpen || step !== 1 || !activeLock) return;
 
     const timer = setInterval(() => {
       const remainingMs = Math.max(0, activeLock.expiryTime - Date.now());
@@ -36,7 +37,8 @@ export default function BookingModal({
 
   const startSeat = selectedSeats.length > 0 ? selectedSeats[0] + 1 : 0;
   const endSeat = selectedSeats.length > 0 ? selectedSeats[selectedSeats.length - 1] + 1 : 0;
-  const fare = selectedSeats.length * 1450;
+  const basePrice = trainInfo?.basePrice || 1450;
+  const fare = selectedSeats.length * basePrice;
 
   const handlePayClick = async () => {
     setIsProcessingPay(true);
@@ -48,54 +50,30 @@ export default function BookingModal({
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h3 className="modal-title">🎟️ Ticket Booking &amp; Payment</h3>
+          <h3 className="modal-title">🎟️ Instant Seat Hold &amp; Payment</h3>
           <button className="modal-close" onClick={onClose}>&times;</button>
         </div>
 
-        {/* Stepper Header */}
+        {/* Stepper Header (Clean 2-Step) */}
         <div className="booking-stepper">
           <div className={`step-item ${step === 1 ? 'active' : step > 1 ? 'done' : ''}`}>
             <div className="step-circle">1</div>
-            <span className="step-label">Token Line</span>
+            <span className="step-label">5-Min Hold &amp; Pay</span>
           </div>
-          <div className={`step-item ${step === 2 ? 'active' : step > 2 ? 'done' : ''}`}>
+          <div className={`step-item ${step === 2 ? 'active' : ''}`}>
             <div className="step-circle">2</div>
-            <span className="step-label">5-Min Hold</span>
-          </div>
-          <div className={`step-item ${step === 3 ? 'active' : ''}`}>
-            <div className="step-circle">3</div>
-            <span className="step-label">Confirmed</span>
+            <span className="step-label">Confirmed Ticket</span>
           </div>
         </div>
 
-        {/* Step 1: Waiting Room */}
+        {/* Step 1: 5-Minute Hold & Payment */}
         {step === 1 && (
-          <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-            <div
-              className="train-status-dot"
-              style={{
-                width: '24px',
-                height: '24px',
-                margin: '0 auto 1rem',
-                background: 'var(--color-purple)',
-                boxShadow: '0 0 15px var(--color-purple)'
-              }}
-            ></div>
-            <h4 style={{ fontSize: '1.05rem', marginBottom: '0.5rem' }}>Line mein aapka number aa raha hai...</h4>
-            <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-              Server ko crash hone se bacha kar fair entry de rahe hain. 1 second me aapka lock lag raha hai...
-            </p>
-          </div>
-        )}
-
-        {/* Step 2: 5-Minute Hold & Payment */}
-        {step === 2 && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
               <div>
                 <div style={{ fontSize: '0.775rem', color: 'var(--text-secondary)' }}>Aapki Selected Seats</div>
                 <strong style={{ color: 'var(--color-cyan-glow)' }}>
-                  {selectedSeats.length === 1 ? `Seat #${startSeat}` : `Seats #${startSeat} - #${endSeat}`} (Rajdhani Express)
+                  {selectedSeats.length === 1 ? `Seat #${startSeat}` : `Seats #${startSeat} - #${endSeat}`} ({trainInfo?.trainName || 'Prashanti Express'})
                 </strong>
               </div>
               <div style={{ textAlign: 'right' }}>
@@ -127,14 +105,14 @@ export default function BookingModal({
                 <span>{isProcessingPay ? 'Confirming Payment...' : `Pay ₹${fare.toLocaleString('en-IN')} via Instant UPI`}</span>
               </button>
               <button className="btn btn-secondary" style={{ width: '100%' }} onClick={onClose}>
-                <span>Cancel & Free Seats</span>
+                <span>Cancel &amp; Free Seats</span>
               </button>
             </div>
           </div>
         )}
 
-        {/* Step 3: Confirmed Ticket */}
-        {step === 3 && activeBooking && (
+        {/* Step 2: Confirmed Ticket */}
+        {step === 2 && activeBooking && (
           <div style={{ textAlign: 'center', padding: '1rem 0' }}>
             <div
               style={{
@@ -175,7 +153,7 @@ export default function BookingModal({
             >
               <div><span style={{ color: 'var(--text-muted)' }}>PNR / Order:</span> <strong style={{ color: 'var(--color-cyan-glow)' }}>{activeBooking.orderId}</strong></div>
               <div><span style={{ color: 'var(--text-muted)' }}>Berths:</span> <strong>Seats #{(activeBooking.start ?? activeBooking.startSeat ?? 0) + 1} to #{(activeBooking.end ?? activeBooking.endSeat ?? 0) + 1}</strong></div>
-              <div><span style={{ color: 'var(--text-muted)' }}>Train:</span> 12301 Rajdhani Express (Coach S1)</div>
+              <div><span style={{ color: 'var(--text-muted)' }}>Train:</span> {trainInfo?.trainNumber || '18463'} {trainInfo?.trainName || 'Prashanti Express'} (Coach {'S' + (Math.floor(((activeBooking.start ?? activeBooking.startSeat ?? 0)) / 72) + 1)} · {trainInfo?.route || 'BBS ➔ SBC'})</div>
               <div><span style={{ color: 'var(--text-muted)' }}>Txn Ref:</span> <span style={{ color: 'var(--status-available)' }}>{activeBooking.transactionRef}</span></div>
             </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Simulators({ onSimulateRush, onSimulateBots, onSimulateGhost, onReset, isRushSimulating }) {
+export default function Simulators({ onSimulateRush, onSimulateBots, onReset, isRushSimulating }) {
   return (
     <div className="glass-panel panel-section">
       <div className="panel-title">
@@ -24,11 +24,6 @@ export default function Simulators({ onSimulateRush, onSimulateBots, onSimulateG
         <button className="btn btn-danger" onClick={onSimulateBots}>
           <span>🛡️</span>
           <span>Block 500 Fake Bots (Security Test)</span>
-        </button>
-
-        <button className="btn btn-secondary" onClick={onSimulateGhost}>
-          <span>⏱️</span>
-          <span>Auto-Cancel Unpaid Seats (8s Timer)</span>
         </button>
 
         <button className="btn btn-secondary" style={{ borderStyle: 'dashed' }} onClick={onReset}>

@@ -34,14 +34,23 @@ public class SlotSyncAllServers {
             }
             BookingRepository bookingRepo = new BookingRepository(dbWal);
 
-            // Seed initial bookings for Rahul, Priya, Amit if repository is empty
+            // Seed initial bookings for 18463 Prashanti Express if repository is empty
             if (bookingRepo.count() == 0) {
-                Booking b1 = new Booking("BKG-1001-RAHUL", "ORD-TATKAL-001", "LCK-001", "USR-RAHUL-SHARMA", 0, 1, 2900.00, "TXN_UPI_RAHUL_98213");
-                Booking b2 = new Booking("BKG-1002-PRIYA", "ORD-TATKAL-002", "LCK-002", "USR-PRIYA-VERMA",  2, 3, 2900.00, "TXN_UPI_PRIYA_48721");
-                Booking b3 = new Booking("BKG-1003-AMIT",  "ORD-TATKAL-003", "LCK-003", "USR-AMIT-PATEL",  4, 5, 2900.00, "TXN_NET_AMIT_11094");
-                bookingRepo.save(b1);
-                bookingRepo.save(b2);
-                bookingRepo.save(b3);
+                int seedIdx = 1001;
+                for (int[] r : SlotLockEngine.DEFAULT_SEEDS) {
+                    Booking b = new Booking(
+                        "BKG-" + seedIdx,
+                        "ORD-PRASHANTI-" + seedIdx,
+                        "LCK-SEED-" + seedIdx,
+                        "USR-PASSENGER-" + seedIdx,
+                        r[0],
+                        r[1],
+                        1450.00 * (r[1] - r[0] + 1),
+                        "TXN_SEED_" + seedIdx
+                    );
+                    bookingRepo.save(b);
+                    seedIdx++;
+                }
             }
 
             // Mark existing booked seats in the Segment Tree
@@ -60,12 +69,21 @@ public class SlotSyncAllServers {
             // 4. Start Microservice 3: Slot-Lock Engine (Port 8082)
             SlotLockServer slotLockServer = new SlotLockServer(8082, lockEngine, () -> {
                 bookingRepo.clear();
-                Booking b1 = new Booking("BKG-1001-RAHUL", "ORD-TATKAL-001", "LCK-001", "USR-RAHUL-SHARMA", 0, 1, 2900.00, "TXN_UPI_RAHUL_98213");
-                Booking b2 = new Booking("BKG-1002-PRIYA", "ORD-TATKAL-002", "LCK-002", "USR-PRIYA-VERMA",  2, 3, 2900.00, "TXN_UPI_PRIYA_48721");
-                Booking b3 = new Booking("BKG-1003-AMIT",  "ORD-TATKAL-003", "LCK-003", "USR-AMIT-PATEL",  4, 5, 2900.00, "TXN_NET_AMIT_11094");
-                bookingRepo.save(b1);
-                bookingRepo.save(b2);
-                bookingRepo.save(b3);
+                int seedIdx = 1001;
+                for (int[] r : SlotLockEngine.DEFAULT_SEEDS) {
+                    Booking b = new Booking(
+                        "BKG-" + seedIdx,
+                        "ORD-PRASHANTI-" + seedIdx,
+                        "LCK-SEED-" + seedIdx,
+                        "USR-PASSENGER-" + seedIdx,
+                        r[0],
+                        r[1],
+                        1450.00 * (r[1] - r[0] + 1),
+                        "TXN_SEED_" + seedIdx
+                    );
+                    bookingRepo.save(b);
+                    seedIdx++;
+                }
             });
             slotLockServer.start();
             System.out.println("  [OK] Microservice 3: Slot-Lock Engine running on http://127.0.0.1:8082");

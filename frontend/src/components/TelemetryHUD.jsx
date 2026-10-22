@@ -7,14 +7,21 @@ export default function TelemetryHUD({ qps, p99, available, locked, booked, ghos
       <div className="glass-panel metric-card">
         <div className="metric-header">
           <span className="metric-label">Booking Speed</span>
-          <span className="metric-badge cyan">HIGH THROUGHPUT</span>
+          <span className={`metric-badge ${qps > 0 ? 'cyan' : ''}`} style={qps === 0 ? { background: 'rgba(148, 163, 184, 0.12)', color: 'var(--text-muted)', border: '1px solid rgba(148, 163, 184, 0.25)' } : {}}>
+            {qps > 0 ? '⚡ HIGH THROUGHPUT' : 'IDLE / STANDBY'}
+          </span>
         </div>
         <div className="metric-value-row">
-          <span className="metric-value">{qps.toLocaleString('en-IN')}</span>
+          <span className="metric-value" style={qps === 0 ? { color: 'var(--text-secondary)' } : {}}>
+            {qps.toLocaleString('en-IN')}
+          </span>
           <span className="metric-unit">Req / Sec</span>
         </div>
         <div className="metric-progress">
-          <div className="metric-progress-fill cyan" style={{ width: qps > 0 ? '85%' : '10%' }}></div>
+          <div
+            className="metric-progress-fill cyan"
+            style={{ width: qps > 0 ? `${Math.min(100, Math.max(12, Math.floor((qps / 862000) * 100)))}%` : '0%' }}
+          ></div>
         </div>
         <div className="metric-subtext">Peak tested: 862,000 requests/sec</div>
       </div>

@@ -20,7 +20,10 @@ IF EXIST "C:\Program Files\nodejs\npm.cmd" (
     SET NPM_BIN="C:\Program Files\nodejs\npm.cmd"
 )
 
-echo [1/3] Starting Backend Microservices (Ports 8080, 8081, 8082, 8083)...
+echo [1/3] Compiling and Starting Backend Microservices (Ports 8080, 8081, 8082, 8083)...
+IF EXIST "%~dp0\compile-backend.bat" (
+    call "%~dp0\compile-backend.bat"
+)
 SET BACKEND_CP="backend/dsa-engine/target/classes;backend/waiting-room/target/classes;backend/slot-lock/target/classes;backend/payment-worker/target/classes;backend/api-gateway/target/classes;backend/target/classes"
 
 start "SlotSync Backend Suite [Ports 8080-8083]" cmd /k "cd /d %~dp0 && %JAVA_BIN% -cp %BACKEND_CP% com.slotsync.SlotSyncAllServers"

@@ -31,12 +31,6 @@ export class SlotSyncAPI {
         }
       }
     });
-
-    // Seed initial 3 bookings for Rahul, Priya, Amit
-    this.localBookings.set('ORD-TATKAL-001', { startSeat: 0, endSeat: 1, userId: 'USR-RAHUL-SHARMA' });
-    this.localBookings.set('ORD-TATKAL-002', { startSeat: 2, endSeat: 3, userId: 'USR-PRIYA-VERMA' });
-    this.localBookings.set('ORD-TATKAL-003', { startSeat: 4, endSeat: 5, userId: 'USR-AMIT-PATEL' });
-    this.simTree.updateRange(1, 0, 999, 0, 5, 1);
   }
 
   destroy() {
@@ -72,9 +66,17 @@ export class SlotSyncAPI {
       availableSeats: this.simTree.getTotalAvailable(),
       occupiedSeats: 1000 - this.simTree.getTotalAvailable(),
       ghostSaved: 0,
+      trainInfo: null,
       activeLocks,
-      seedBooked: [[0, 1], [2, 3], [4, 5]]
+      seedBooked: []
     };
+  }
+
+  async getAvailableSeats() {
+    const state = await this.fetchLiveState();
+    return state && typeof state.availableSeats === 'number' 
+      ? state.availableSeats 
+      : this.simTree.getTotalAvailable();
   }
 
   async joinQueue(userId = 'USR-PASSENGER-ME', ip = '127.0.0.1') {
@@ -242,43 +244,13 @@ export class SlotSyncAPI {
     };
   }
 
-  async triggerGhostTest() {
-    if (this.isBackendLive) {
-      try {
-        const res = await fetch(`${this.slotLockUrl}/api/v1/slots/ghost-test`, {
-          method: 'POST'
-        });
-        if (res.ok) {
-          const data = await res.json();
-          return { ok: true, ...data };
-        }
-      } catch (e) {
-        console.warn('Backend ghost test call error, using DSA engine fallback:', e);
-      }
-    }
-
-    // Local fallback: Dynamic SegmentTree allocation (ZERO HARDCODING)
-    const ranges = this.simTree.findAvailableBatches(4, 4);
-    if (!ranges || ranges.length === 0) {
-      return { ok: false, error: 'NO_SEATS_AVAILABLE' };
-    }
-    const r = ranges[0];
-    const lockRes = await this.lockSlots('USR-GHOST-ABANDON', r.start, r.end, 8000);
-    return {
-      ok: lockRes.ok,
-      lockId: lockRes.data?.lockId,
-      start: r.start,
-      end: r.end,
-      seats: r.seats,
-      ttl: 8000
-    };
-  }
 
   buildSeatMatrix(backendState) {
     const states = [];
     const activeLocks = backendState?.activeLocks || Array.from(this.localLocks.values());
-    const seedBooked = backendState?.seedBooked || [[0, 1], [2, 3], [4, 5]];
-    const localBooked = Array.from(this.localBookings.values()).map(b => [b.start, b.end]);
+    // Directly use backend confirmed seed bookings with zero frontend hardcoding
+    const seedBooked = backendState?.seedBooked || [];
+    const localBooked = Array.from(this.localBookings.values()).map(b => [b.start ?? b.startSeat, b.end ?? b.endSeat]);
     const allBooked = [...seedBooked, ...localBooked];
 
     for (let i = 0; i < 1000; i++) {
@@ -327,12 +299,6 @@ export class SlotSyncAPI {
     this.localLocks.clear();
     this.localBookings.clear();
     this.simTree = new SegmentTreeSim(1000);
-    this.simTree.lock(0, 1);
-    this.simTree.lock(2, 3);
-    this.simTree.lock(4, 5);
-    this.localBookings.set('ORD-TATKAL-001', { start: 0, end: 1, startSeat: 0, endSeat: 1, userId: 'USR-RAHUL-SHARMA' });
-    this.localBookings.set('ORD-TATKAL-002', { start: 2, end: 3, startSeat: 2, endSeat: 3, userId: 'USR-PRIYA-VERMA' });
-    this.localBookings.set('ORD-TATKAL-003', { start: 4, end: 5, startSeat: 4, endSeat: 5, userId: 'USR-AMIT-PATEL' });
 
     if (this.isBackendLive) {
       try {

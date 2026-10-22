@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-export default function Header({ isBackendLive }) {
+export default function Header({ isBackendLive, trainInfo }) {
   const [clock, setClock] = useState('');
 
   useEffect(() => {
@@ -12,6 +12,13 @@ export default function Header({ isBackendLive }) {
     const timer = setInterval(updateTime, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  const trainTitle = trainInfo?.trainNumber && trainInfo?.trainName
+    ? `${trainInfo.trainNumber} - ${trainInfo.trainName}`
+    : 'Connecting to Backend...';
+  const trainRoute = trainInfo?.route
+    ? `${trainInfo.route} · 1,000 Tatkal Seats`
+    : 'Fetching Train Details...';
 
   return (
     <header className="app-header">
@@ -28,8 +35,8 @@ export default function Header({ isBackendLive }) {
 
         <div className="train-info-pill">
           <span className="train-status-dot"></span>
-          <span className="train-title">Rajdhani Express 12301</span>
-          <span className="train-route">NDLS ➔ HWH · 1,000 Tatkal Seats</span>
+          <span className="train-title">{trainTitle}</span>
+          <span className="train-route">{trainRoute}</span>
         </div>
 
         <div className="header-actions">
