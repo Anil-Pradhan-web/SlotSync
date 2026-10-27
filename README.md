@@ -4,10 +4,10 @@
 ### Ultra-High Concurrency Tatkal Ticket & Slot Reservation Engine
 
 [![Java 23](https://img.shields.io/badge/Java-23%20Virtual%20Threads-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)](https://www.oracle.com/java/)
-[![React 19](https://img.shields.io/badge/React-19%20Dashboard-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-Fast%20Bundler-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Terminal CLI Demo](https://img.shields.io/badge/Interactive-Terminal%20Demo%20Suite-00E5FF?style=for-the-badge&logo=gnometerminal&logoColor=black)](./INTERVIEW_PITCH_GUIDE.md)
 [![Zero Overbooking](https://img.shields.io/badge/Double--Booking-0.00%25%20STRICT%20ZERO-10B981?style=for-the-badge)](https://github.com/Anil-Pradhan-web/SlotSync)
-[![Throughput](https://img.shields.io/badge/Peak%20Throughput-862k%2B%20req%2Fsec-38BDF8?style=for-the-badge)](https://github.com/Anil-Pradhan-web/SlotSync)
+[![Throughput](https://img.shields.io/badge/Peak%20Throughput-884k%2B%20req%2Fsec-38BDF8?style=for-the-badge)](https://github.com/Anil-Pradhan-web/SlotSync)
+[![Zero Framework Bloat](https://img.shields.io/badge/Runtime-Pure%20Java%20HTTP-F59E0B?style=for-the-badge)](./backend)
 [![License: MIT](https://img.shields.io/badge/License-MIT-A855F7?style=for-the-badge)](./LICENSE)
 
 <br/>
@@ -15,227 +15,165 @@
 **Engineered to solve the classic Indian Railways "10:00 AM Tatkal Crisis":**  
 Where **100,000 desperate passengers hit the booking gateway at the exact same fraction of a second for just 1,000 available train berths** — delivering **Strict 0.00% Double-Booking**, **Zero Database Deadlocks**, and **Zero Ghost Inventory**.
 
-[Problem Statement](#-the-problem-statement-the-1000-am-tatkal-crisis) • [Why Not Monolithic?](#-why-not-a-monolith-why-decoupled-microservices) • [Architecture](#-system-architecture) • [Tech Stack](#-technology-stack) • [Core DSA](#-the-4-core-dsa-superpowers) • [Quick Start](#-quick-start-one-click-launch) • [Microservices Directory](#-microservices-directory--api-contracts)
+[Try It in 10 Seconds](#-try-it-in-10-seconds-interactive-terminal-showcase) • [The Story](#-the-story-what-breaks-at-100000-am) • [The 4 Microservices](#-the-4-microservices-the-railway-station-model) • [Core DSA](#-the-4-core-dsa-superpowers) • [Live Benchmarks](#-live-stress-test-benchmark-results) • [Interview Pitch Guide](./INTERVIEW_PITCH_GUIDE.md) • [Quick Start](#-quick-start)
 
 </div>
 
 ---
 
-## ⚡ The Problem Statement: The "10:00 AM Tatkal Crisis"
+## 🎮 Try It in 10 Seconds (Interactive Terminal Showcase)
 
-In India, Indian Railways opens the **Tatkal ticket quota** every morning at exactly **10:00:00 AM**. What follows is one of the most brutal real-world concurrency challenges in software engineering:
+You don't need a browser, complex setup, or external dependencies. SlotSync comes with an interactive ANSI terminal showcase (`SlotSyncDemoCLI.java`) that tests real Java concurrency live on your machine:
 
-```
-           10:00:00 AM — THE TRAFFIC TSUNAMI (0 to 100,000 in 200ms)
-                     
-      100,000+ Concurrent Passengers + Scraping Botnets
-                             │
-                             ▼
-              [ Only 1,000 Available Berths ]
-                 (Coaches S1 to S14 Sleeper)
+```cmd
+run-demo.bat
 ```
 
-When 100,000 users click **"Book Now"** simultaneously against only 1,000 seats, traditional systems fail due to **three catastrophic real-world disasters**:
+```
+================================================================================
+               ⚡ SLOTSYNC — HIGH-CONCURRENCY BACKEND SUITE                     
+              Tatkal Ticket & Slot Reservation Engine (Java 23)                 
+================================================================================
+  • Core Engine: Pure Java (Zero Framework Bloat, < 800ms boot, Microsecond Latency)
+  • DSA Superpowers: Segment Tree (RAM), Min-Heap TTL, Token Bucket, Append-Only WAL
+  • Guarantees: Strict 0.00% Double-Booking, Zero Deadlocks, Zero Ghost Inventory
+--------------------------------------------------------------------------------
+  SELECT AN INTERVIEWER DEMO SCENARIO:
+  [1] ⚡ 10:00 AM Tatkal Concurrency Blast (100,000 real requests, 0.00% double-booking)
+  [2] 🛡️ Edge Botnet & DDoS Defense (Token Bucket drops 500 bot attacks with HTTP 429)
+  [3] 👻 Ghost Inventory Auto-Reaper (Min-Heap Priority Queue auto-frees abandoned seats)
+  [4] 💾 Crash & WAL Recovery Test (Simulate JVM crash, reload state from bookings_wal.log)
+  [5] 🗺️ Live Train Coach & Seat Matrix (Visual ASCII grid across S1 to S14 coaches)
+  [6] 🚀 Run Complete End-to-End Showcase (Scenarios 1 -> 2 -> 3 -> 4 sequential)
+  [0] ❌ Exit Demonstration
+
+Enter Choice [0-6]: 1
+```
+
+### What happens when you press `[1]`?
+- **100,000 real user requests** are pre-generated across **100 concurrent worker threads**.
+- A `CountDownLatch` holds all threads until a synchronized start gun fires at the exact same nanosecond into the in-memory **Segment Tree**.
+- The benchmark finishes in **~113 milliseconds** with over **884,000 requests/second**, **P99 latency of 0.89 ms**, and **mathematically verified 0.00% double-booking** (999 occupied + 1 free = 1,000 seats).
+
+---
+
+## ⚡ The Story: What Breaks at 10:00:00 AM?
+
+Every morning at **10:00:00 AM**, Indian Railways opens the **Tatkal ticket quota**. What follows is one of the most intense burst-traffic challenges in software engineering:
+
+```
+            10:00:00 AM — THE TRAFFIC TSUNAMI (0 to 100,000 in 200ms)
+                      
+       100,000+ Desperate Passengers + Automated Scraping Bots
+                              │
+                              ▼
+                [ Only 1,000 Available Berths ]
+                  (Coaches S1 to S14 Sleeper)
+```
+
+In traditional monolithic web applications backed by standard SQL databases, **three catastrophic disasters happen simultaneously**:
 
 ### 💥 Disaster 1: The Database Connection Pool Crash
-- In standard architectures, each user request hits a web server and immediately opens a database connection to query available seats.
-- Standard SQL connection pools (e.g., HikariCP) are configured for **50 to 100 maximum connections**.
-- When 100,000 requests arrive in under 250 milliseconds, connection pools are choked instantly. Database CPU hits 100%, threads wait indefinitely in queue, and the application throws `HTTP 504 Gateway Timeout` or crashes entirely.
+- Every user request immediately opens a database connection to query available seats.
+- Standard connection pools (e.g., HikariCP) are configured for **50 to 100 connections**.
+- When 100,000 requests arrive in under 250 milliseconds, the connection pool chokes instantly. CPU hits 100%, threads wait indefinitely, and the server throws `HTTP 504 Gateway Timeout` or crashes.
 
 ### 👥 Disaster 2: Double-Booking (Concurrency Race Conditions)
-- When two passengers (e.g., Rahul and Priya) search for a seat at the same millisecond, both read Seat #12 as `AVAILABLE`.
-- Both click confirm. Traditional row-level `SELECT ... FOR UPDATE` locks fail under concurrent volume because multiple transactions read stale snapshots before locks are acquired.
-- Both users receive payment prompts, and **the same physical berth is sold twice**, resulting in angry passengers, counter disputes, and legal complaints.
+- Two passengers search for a berth at the exact same millisecond. Both read Seat #42 as `AVAILABLE`.
+- Both click confirm. Traditional row-level `SELECT ... FOR UPDATE` locks fail under concurrent burst volume because multiple transactions read stale snapshots before locks are acquired.
+- Both users are charged, and **the same physical berth is sold twice**, resulting in station disputes and legal complaints.
 
 ### 👻 Disaster 3: Ghost Inventory (The Phantom Hold)
-- To prevent double-booking, traditional systems lock a seat when a buyer enters the payment page.
-- However, up to **30% of buyers abandon the checkout** (close browser, internet drops, or payment gateway fails).
-- If the system relies on periodic cron jobs or batch database queries (`SELECT * FROM locks WHERE expired_at < NOW()`) to free them, seats remain locked as "ghosts" for 15–30 minutes while genuine buyers waiting in line are turned away with "Regret / Housefull".
+- To prevent double-booking, standard systems lock a seat the moment a user enters the payment page.
+- However, up to **30% of users abandon checkout** (close browser, payment OTP fails, or network drops).
+- If the system relies on periodic database cron jobs (`SELECT * FROM locks WHERE expired_at < NOW()`) to free them, seats remain locked as "ghosts" for 15–30 minutes while genuine waiting buyers are turned away with "Regret / Housefull".
 
 ---
 
-## 🏛️ Why Not a Monolith? Why Decoupled Microservices?
+## 🚉 The 4 Microservices: The "Railway Station" Model
 
-A traditional monolithic web application (one big Spring Boot or Django application connected to a single PostgreSQL database) is the default choice for 95% of web apps. **However, for high-concurrency burst flash sales like Tatkal, a monolith is architecturally fatal.**
+Instead of putting database locks on the critical user path, SlotSync decouples the transaction flow into **4 lightweight microservices** using the real-world **Railway Station Model**:
 
-Here is the exact engineering justification for why a Monolith fails and why SlotSync was built as **decoupled microservices**:
-
-| Engineering Axis | ❌ Why Monolithic Fails at 10:00 AM | ✅ How SlotSync Microservices Win |
-|---|---|---|
-| **Resource Contention** | **Shared Thread & Connection Pool Choke**: If 50,000 users are stalled waiting for bank OTP verification, all server threads and DB connections are held hostage. Users simply browsing train schedules get blocked because the whole monolith is choked. | **Complete Fault & Resource Isolation**: The **Payment Worker (Port 8083)** handles slow external banks completely isolated from the **Slot-Lock Engine (Port 8082)**. The core engine never waits on an external HTTP request. |
-| **Blast Radius** | **Single Point of Complete Failure**: If the payment gateway slows down or an unhandled exception occurs in checkout, the entire application crashes (search, authentication, booking, and ticket downloads all go down together). | **Contained Perimeter Blast Radius**: If the payment worker is under heavy load, the **API Gateway (Port 8080)** and **Waiting Room (Port 8081)** continue operating smoothly, queuing passengers in orderly fashion without dropping connections. |
-| **Data Storage Bottleneck** | **Database Lock Escalation**: Monoliths rely on database transactions (`BEGIN ... SELECT FOR UPDATE ... COMMIT`). When 100k queries fight for the same 1,000 rows, database lock escalation serializes requests into a single-lane crawl (P99 latency spikes past 15,000 ms). | **In-Memory Segment Tree in RAM**: SlotSync's **Slot-Lock Engine** eliminates all database queries during seat checks. Contiguous berths are verified and held in **RAM** in under **1 microsecond** using `StampedLock` primitives. |
-| **Traffic Shaping** | **Direct Database Flooding**: In a monolith, every inbound HTTP request hits backend application services directly, overwhelming internal buffers. | **Perimeter Token Bucket & Turnstile**: The **Gateway** filters out 500+ malicious bot scripts at the network edge with `HTTP 429`. The **Waiting Room** acts as a physical subway turnstile, admitting smooth batches of **200 users/sec**. |
-
----
-
-## 🛠️ Technology Stack
-
-Every technology and tool in SlotSync was deliberately chosen for **raw performance, zero external framework overhead, and sub-millisecond execution**:
-
-| Layer | Technology | Version | Architectural Role & Justification |
-|---|---|---|---|
-| **Core Runtime** | **Java (OpenJDK)** | **23** | Utilizes **Virtual Threads (Project Loom)** to handle tens of thousands of concurrent client connections with minimal OS memory overhead, avoiding thread pool starvation. |
-| **Microservices Engine** | **Sun Built-in HTTP Server** | `com.sun.net.httpserver` | Zero external framework bloat (no heavy Spring Boot / Tomcat startup overhead). Starts in < 800ms and executes with microsecond-level raw TCP latency. |
-| **Core In-Memory DSA** | **Segment Tree** | Pure Java | Enables **$O(\log N)$** atomic contiguous berth reservation across 1,000 seats. Replaces slow SQL queries with instant bit-level RAM operations. |
-| **Concurrency Primitives** | **`StampedLock` & `AtomicInteger`** | `java.util.concurrent` | Provides non-blocking optimistic read locking for high-read, low-write seat matrix inspection without thread contention. |
-| **TTL Reclamation Engine** | **Min-Heap Priority Queue** | Pure Java | Implements an **$O(1)$** peek timer queue for abandoned payment detection. Automatically releases expired seats back to `AVAILABLE` without database polling. |
-| **DDoS & Bot Shield** | **Token Bucket Algorithm** | Pure Java | Edge rate limiter configured with **50 Burst Capacity, 10 Tokens/sec Refill Rate** per IP to drop scraping botnets with `HTTP 429`. |
-| **Traffic Partitioning** | **Consistent Hash Ring** | Pure Java | Virtual node hashing with MD5 distribution to prevent hot-spotting across queue partitions (< 5% variance). |
-| **Durable Persistence** | **Append-Only Write-Ahead Log (WAL)** | `bookings_wal.log` | Asynchronous crash-proof disk journal ensuring confirmed bookings survive server crashes without slowing down in-memory operations. |
-| **Relational Database** | **PostgreSQL / SQLite Compatible DDL** | `schema.sql` | Permanent, ACID-compliant relational schema storing confirmed passenger orders, PNRs, and payment audit logs. |
-| **Frontend Framework** | **React 19** | **19.0.0** | Modern component-based mission control UI with real-time HUD metrics, state batching, and zero layout shift. |
-| **Build Tooling** | **Vite** | **6.x** | Ultra-fast Hot Module Replacement (HMR) and optimized ES module bundling for sub-second UI updates. |
-| **Styling & Design** | **Custom Vanilla CSS3** | Modern CSS | Handcrafted dark-mode Indian Railways theme, glassmorphism panels, interactive seat grid, liquid fuel gauges, and zero Tailwind/framework dependencies. |
-
----
-
-## 🏗️ System Architecture
-
-The following diagram illustrates the decoupled microservices pipeline and data flow:
-
-```mermaid
-flowchart TD
-    subgraph Ingress["🌐 User Ingress (10:00 AM Rush)"]
-        U1["10,000 Genuine Passengers"]
-        U2["500 Malicious Scraping Bots"]
-    end
-
-    subgraph Gateway["🚪 API Gateway (Port 8080)"]
-        TB["Token Bucket Rate Limiter\n(50 Burst, 10 Refill/s)"]
-        IDEM["Idempotency Filter\n(X-Idempotency-Key Cache)"]
-    end
-
-    subgraph Queue["🎟️ Virtual Waiting Room (Port 8081)"]
-        FIFO["Consistent FIFO Queue"]
-        DISP["Batch Admission Dispatcher\n(Smooth 200 users / sec)"]
-    end
-
-    subgraph CoreLock["⚡ Slot-Lock Engine (Port 8082)"]
-        ST["Segment Tree in RAM\n(1,000 Seats across S1-S14)"]
-        SLOCK["StampedLock Atomic Concurrency\n(Sub-millisecond Read/Write)"]
-        HEAP["Min-Heap TTL Reaper\n(Auto-frees abandoned checkouts)"]
-    end
-
-    subgraph Payment["💳 Payment Worker (Port 8083)"]
-        HOOK["Webhook Payment Reconciler"]
-        WAL["Append-Only Disk Journal\n(bookings_wal.log)"]
-        DB[("Permanent SQL DB\n(bookings table)")]
-    end
-
-    U2 -->|"High-Frequency Bot Spam"| TB
-    TB -->|"Exceeds Token Limit"| DROP["🛑 HTTP 429 Too Many Requests\n(Bots Neutralized at Edge)"]
-
-    U1 --> TB
-    TB --> IDEM
-    IDEM -->|"Admitted to Waiting Line"| FIFO
-    FIFO --> DISP
-    DISP -->|"Fast-Track Admission Token"| ST
-
-    ST <--> SLOCK
-    ST -.->|"Unpaid Seat After 5 Min"| HEAP
-    HEAP -.->|"Auto-Reclaim to FREE"| ST
-
-    ST -->|"Seat Reserved: Held in Yellow"| HOOK
-    HOOK --> WAL
-    HOOK --> DB
 ```
-
----
-
-## 🔄 Request Lifecycle & Booking Flow
-
-```mermaid
-sequenceDiagram
-    autonumber
-    actor User as 👤 Passenger
-    participant GW as 🚪 API Gateway (8080)
-    participant WR as 🎟️ Waiting Room (8081)
-    participant SL as ⚡ Slot-Lock Engine (8082)
-    participant PW as 💳 Payment Worker (8083)
-    participant WAL as 📝 Disk Journal (WAL)
-
-    User->>GW: POST /api/v1/queue/join (User ID, IP)
-    GW->>GW: Token Bucket Check (DDoS / Bot Guard)
-    GW->>WR: Enqueue Passenger
-    WR-->>User: Ticket #342 (Estimated Wait: 1.7s)
-
-    WR->>WR: Batch Dispatcher triggers (200 / sec)
-    WR-->>User: Admitted! Direct Access Token Granted
-
-    User->>SL: POST /api/v1/slots/lock (Seats #45 - #46, TTL 300s)
-    SL->>SL: SegmentTree atomic range query & lock
-    SL-->>User: 200 OK (Lock ID: LCK-77492, Seats Held in Yellow)
-
-    alt Payment Completed
-        User->>PW: POST /api/v1/payments/process (Lock ID, Amount)
-        PW->>SL: Validate Lock ID & Mark BOOKED
-        PW->>WAL: Append to disk journal (Zero DB lock contention)
-        PW-->>User: 200 OK (Ticket Confirmed, Boarding Pass Downloadable)
-    else Payment Abandoned / Tab Closed
-        Note over SL: Min-Heap TTL Reaper timer expires (300s)
-        SL->>SL: Auto-reclaims seats back to AVAILABLE (Green)
-        Note over SL: 0 Ghost Seats! Immediate redistribution
-    end
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        SLOTSYNC 4-MICROSERVICES PIPELINE                               │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│                                                                                        │
+│ 1. API GATEWAY (Port 8080)       = 👮 The Station Gate Security Guard                  │
+│    • Drops malicious botnets with HTTP 429 using Token Bucket rate limiting.           │
+│    • Drops duplicate button clicks using X-Idempotency-Key.                            │
+│                                      │                                                 │
+│                                      ▼                                                 │
+│ 2. WAITING ROOM (Port 8081)      = 🚪 The Waiting Hall & Subway Turnstile              │
+│    • Holds 10,000 passengers in a consistent FIFO queue.                               │
+│    • Admits smooth, metered batches of 200 users/sec with an admission token, so the   │
+│      downstream counter is never flooded.                                              │
+│                                      │                                                 │
+│                                      ▼                                                 │
+│ 3. SLOT-LOCK ENGINE (Port 8082)  = ⚡ The High-Speed RAM Counter Clerk (DSA Core)      │
+│    • Manages 1,000 berths (Coaches S1-S14) in RAM using a Segment Tree.                │
+│    • StampedLock optimistic reads: checks & locks contiguous seats in < 1 microsecond. │
+│    • Min-Heap TTL Reaper: If user doesn't pay in 5 min, auto-reclaims the seats in     │
+│      O(1) time without any slow SQL polling queries.                                   │
+│                                      │                                                 │
+│                                      ▼                                                 │
+│ 4. PAYMENT WORKER (Port 8083)    = 💳 The Cashier & Safe (WAL on Disk)                 │
+│    • Receives bank webhook payment reconciliation.                                     │
+│    • Confirms the lock and writes an immutable record to disk (`bookings_wal.log`).    │
+│    • Guaranteed zero data loss even if the server crashes.                             │
+└────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
 ## 🧠 The 4 Core DSA Superpowers
 
-| Data Structure / Pattern | Component | Problem Solved | Computational Complexity |
-|---|---|---|---|
-| **Token Bucket** | API Gateway (`RateLimitingFilter.java`) | Drops bots, scraping scripts, and rapid double-clicking at the network perimeter without touching the core engine. | **$O(1)$** lock-free check (~50ns) |
-| **Segment Tree** | Slot-Lock Engine (`SegmentTree.java`) | Instantly finds contiguous available seat ranges (e.g., family of 4) and checks seat conflicts atomically in RAM. | **$O(\log N)$** query & update (< 1µs) |
-| **Min-Heap (Priority Queue)** | Slot-Lock Engine (`MinHeapTTLReaper.java`) | Reclaims abandoned checkouts automatically. The root always stores the next earliest expiring seat lock. | **$O(1)$** peek & **$O(\log K)$** eviction |
-| **Consistent Hash Ring** | Waiting Room (`ConsistentHashRing.java`) | Uniformly distributes millions of queued passengers across partition buckets with < 5% variance. | **$O(\log M)$** node lookup |
+Every algorithm in SlotSync lives in [`backend/dsa-engine`](./backend/dsa-engine) and was chosen to eliminate database bottlenecks:
+
+| Data Structure / Pattern | Where It Lives | Problem Solved | Computational Complexity | Why Not Traditional CRUD / SQL? |
+|---|---|---|---|---|
+| **Segment Tree** | [`SegmentTree.java`](./backend/dsa-engine/src/main/java/com/slotsync/dsa/segmenttree/SegmentTree.java) | Instantly finds contiguous available seat ranges (e.g., family of 4) and checks seat conflicts atomically in RAM. | **$O(\log N)$** query & update (< 1µs) | `SELECT ... FOR UPDATE` in SQL causes row lock escalation and deadlocks under 100k queries. Segment Tree operates entirely in RAM with bit manipulation. |
+| **`StampedLock`** | [`SegmentTree.java`](./backend/dsa-engine/src/main/java/com/slotsync/dsa/segmenttree/SegmentTree.java) | Read vs Write thread contention. | Non-blocking optimistic read | Standard `synchronized` or `ReentrantReadWriteLock` forces thread context switching. `StampedLock.tryOptimisticRead()` allows thousands of concurrent reads with zero lock overhead. |
+| **Min-Heap Priority Queue** | [`MinHeapTTLReaper.java`](./backend/dsa-engine/src/main/java/com/slotsync/dsa/ttl/MinHeapTTLReaper.java) | Reclaims abandoned checkouts automatically without database cron polling. | **$O(1)$** peek & **$O(\log K)$** eviction | SQL systems run a cron `SELECT * FROM locks WHERE expired_at < NOW()`, causing full table scans every minute. Min-Heap only inspects the earliest expiring root node. |
+| **Token Bucket** | [`TokenBucket.java`](./backend/dsa-engine/src/main/java/com/slotsync/dsa/ratelimiter/TokenBucket.java) | Drops bots, scraping scripts, and rapid double-clicking at the network perimeter. | **$O(1)$** lock-free CAS (~50ns) | Drops 450+ malicious requests in < 2 microseconds per drop with zero database lookups and zero thread blocking. |
 
 ---
 
-## 🎮 Interactive Frontend Command Center
+## 📊 Live Stress Test Benchmark Results
 
-Built with **React 19 + Vite**, the frontend is a dark-mode mission control dashboard connected directly to the Java microservices:
+Executed live on **100,000 concurrent user requests** hitting 1,000 seats (`TatkalConcurrencyStressTest.java` / Demo Option 1):
 
 ```
-========================================================================================
-                          SLOTSYNC MISSION CONTROL DASHBOARD
-========================================================================================
- [Header]  Prashanti Express (18463) · BBS ➔ SBC · 1,000 Berths · Status: LIVE 🟢
-----------------------------------------------------------------------------------------
- [HUD]     QPS: 862,000 | P99: 0.89 ms | Available: 800 | Locked: 0 | Booked: 200
-----------------------------------------------------------------------------------------
- [Matrix]  Coaches S1 to S14 (1,000 Berths: Lower, Middle, Upper, Side Lower, Side Upper)
-           🟩 Green = Available    🟨 Yellow = Held in Checkout    🟥 Red = Confirmed Booked
-----------------------------------------------------------------------------------------
- [Sims]    [⚡ 10:00 AM Tatkal Rush]   [🛡️ Block 500 Fake Bots]   [🔄 Reset Train]
- [Queue]   Smart Waiting Line HUD: Direct Entry 🟢 | Admitting 200/s 🟣 | Gate Closed 🛑
- [Logs]    Real-Time Microsecond Kernel Stream (Idempotency, StampedLock, Reaper logs)
-========================================================================================
+--------------------------------------------------------------------------------
+                        STRESS TEST BENCHMARK RESULTS                           
+--------------------------------------------------------------------------------
+  Total Requests Processed:     100,000 in 113 ms
+  Successful Bookings:          556
+  Rejected (Conflicts):         99,444
+  Actual Throughput:            884,955 requests/second
+
+  REAL NANOSECOND LATENCY PROFILE:
+    • P50  Latency:     0.20 µs ( 0.000 ms)
+    • P90  Latency:     1.30 µs ( 0.001 ms)
+    • P99  Latency:   890.10 µs ( 0.890 ms)
+    • P99.9 Latency:  1622.70 µs ( 1.623 ms)
+
+  MATHEMATICAL AUDIT & CONSERVATION CHECK:
+    • Occupied Berths:          999
+    • Remaining Available:      1
+    • Conservation Equality:    999 + 1 = 1000 (Expected: 1000) -> PASS
+    • DOUBLE-BOOKING AUDIT:     STRICT 0.00% (ZERO CONFLICTS ACQUIRED)
+================================================================================
 ```
 
-### Exactly 3 Live Interactive Simulators
-1. ⚡ **10:00 AM Tatkal Rush**: Simulates 10,000 concurrent passengers streaming into the queue. Admitted users lock seats in RAM, reconcile payments, and execute a mop-up wave until **all 1,000 berths (Coaches S1-S14) reach 100% full capacity with 0.00% double-booking**.
-2. 🛡️ **Block 500 Fake Bots (Security Test)**: Launches a real-time DDoS test of 500 rapid bot requests. Displays a live Token Bucket liquid fuel gauge, an IP signature packet interception console, and a human bypass demonstration proving zero core CPU load.
-3. 🔄 **Reset Train (Clear All)**: Atomically clears all active locks and resets the 1,000-seat train back to fresh state in a single click.
-
-### Real Booking Flow & Digital Boarding Pass
-- Click on any free seat in the coach grid to trigger the fast-track reservation modal.
-- Test simulated payment confirmation.
-- Instantly download the official **SlotSync Digital Boarding Pass (`Ticket_*.txt`)** containing PNR, Coach, Berth numbers, WAL disk journal reference, and payment transaction IDs.
-
----
-
-## 📊 Stress Test Benchmark Results
-
-Benchmarked with **100,000 concurrent user requests** hitting 1,000 seats (`TatkalConcurrencyStressTest.java`):
-
-| Metric | Result | Benchmark Significance |
+| Metric | Verified Measurement | Engineering Significance |
 |---|---|---|
-| **Peak Throughput** | **862,069 requests / sec** | Handles national-scale Tatkal surges in RAM |
-| **P99 Response Latency** | **1.25 milliseconds** | Zero perceived delay for passengers |
+| **Peak Throughput** | **884,955 requests / sec** | Processes entire Tatkal rush in JVM memory in ~113 ms |
+| **P50 Latency** | **0.20 microseconds (0.000 ms)** | Sub-microsecond optimistic read locking |
+| **P99 Latency** | **0.89 milliseconds** | Sub-millisecond response for 99% of passengers |
 | **Double-Booking Rate** | **Strict 0.00% (STRICT ZERO)** | Zero overlapping berths ever issued |
-| **Inventory Conservation** | **$1,000 / 1,000$ Exact** | Not a single seat lost or oversold |
-| **Thread Management** | **Java 23 Virtual Threads** | Lightweight execution without OS thread exhaustion |
+| **Inventory Conservation** | **$1,000 / 1,000$ Exact** | $999\text{ occupied} + 1\text{ free} = 1,000$ berths accounted for |
+| **Thread Model** | **Java 23 Virtual Threads** | Lightweight execution without OS thread starvation |
 
 ---
 
@@ -243,13 +181,12 @@ Benchmarked with **100,000 concurrent user requests** hitting 1,000 seats (`Tatk
 
 All 4 backend microservices run as lightweight Java processes without heavy frameworks:
 
-| Port | Service | Core Responsibility | Primary Endpoints |
-|---|---|---|---|
-| **`8080`** | **API Gateway** | Token Bucket Rate Limiting, Idempotency Cache, CORS | `GET /health`<br/>`POST /api/v1/queue/join` |
-| **`8081`** | **Virtual Waiting Room** | FIFO Passenger Queue, Batch Dispatcher (200/s) | `GET /health`<br/>`GET /api/v1/queue/status`<br/>`POST /api/v1/queue/admit` |
-| **`8082`** | **Slot-Lock Engine** | Segment Tree in RAM, Min-Heap TTL Reaper, StampedLocks | `GET /health`<br/>`GET /api/v1/slots/state`<br/>`POST /api/v1/slots/lock`<br/>`POST /api/v1/slots/unlock`<br/>`POST /api/v1/slots/tatkal-wave`<br/>`POST /api/v1/slots/reset` |
-| **`8083`** | **Payment Worker** | Webhook Reconciliation, Append-Only Disk WAL Log | `GET /health`<br/>`POST /api/v1/payments/process`<br/>`POST /api/v1/payments/webhook` |
-| **`5173`** | **Frontend Dashboard** | React 19 + Vite Live Mission Control Command Center | `http://localhost:5173` |
+| Port | Service | Core Responsibility | Primary Endpoints | Source Class |
+|---|---|---|---|---|
+| **`8080`** | **API Gateway** | Token Bucket Rate Limiting, Idempotency Cache, CORS | `GET /health`<br/>`POST /api/v1/queue/join` | [`GatewayServer.java`](./backend/api-gateway/src/main/java/com/slotsync/gateway/server/GatewayServer.java) |
+| **`8081`** | **Virtual Waiting Room** | FIFO Passenger Queue, Batch Dispatcher (200/s) | `GET /health`<br/>`GET /api/v1/queue/status`<br/>`POST /api/v1/queue/admit` | [`WaitingRoomServer.java`](./backend/waiting-room/src/main/java/com/slotsync/waitingroom/server/WaitingRoomServer.java) |
+| **`8082`** | **Slot-Lock Engine** | Segment Tree in RAM, Min-Heap TTL Reaper, StampedLocks | `GET /health`<br/>`GET /api/v1/slots/state`<br/>`POST /api/v1/slots/lock`<br/>`POST /api/v1/slots/unlock`<br/>`POST /api/v1/slots/tatkal-wave`<br/>`POST /api/v1/slots/reset` | [`SlotLockServer.java`](./backend/slot-lock/src/main/java/com/slotsync/lock/server/SlotLockServer.java) |
+| **`8083`** | **Payment Worker** | Webhook Reconciliation, Append-Only Disk WAL Log | `GET /health`<br/>`POST /api/v1/payments/process`<br/>`POST /api/v1/payments/webhook` | [`PaymentServer.java`](./backend/payment-worker/src/main/java/com/slotsync/payment/server/PaymentServer.java) |
 
 ---
 
@@ -259,65 +196,68 @@ All 4 backend microservices run as lightweight Java processes without heavy fram
 SlotSync/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                            # Automated Java 23 & React 19 CI pipeline
+│       └── ci.yml                            # Automated Java 23 CI & 100k stress test runner
 ├── LICENSE                                   # MIT License
 ├── README.md                                 # Architecture & engineering documentation
-├── start-all.bat                             # One-click master launcher
+├── INTERVIEW_PITCH_GUIDE.md                  # Comprehensive Interview Pitch & Defense Guide
+├── compile-backend.bat                       # Zero-dependency JDK 23 batch compiler
+├── compile-backend.ps1                       # PowerShell compiler script
+├── run-demo.bat                              # 1-Click Interactive Terminal Demo Launcher
+├── start-all.bat                             # One-click unified microservices launcher
 ├── stop-all.bat                              # One-click graceful shutdown script
 ├── backend/
 │   ├── database/
 │   │   ├── schema.sql                        # PostgreSQL / SQLite DDL schema
-│   │   └── seed.sql                          # Prashanti Express 18463 seed data
+│   │   ├── seed.sql                          # Prashanti Express 18463 seed data
+│   │   └── bookings_wal.log                  # Append-only durable disk journal
 │   ├── dsa-engine/                           # Pure DSA core (SegmentTree, TokenBucket, MinHeap)
 │   ├── api-gateway/                          # Virtual Thread Gateway (Port 8080)
 │   ├── waiting-room/                         # FIFO Queue & Batch Dispatcher (Port 8081)
 │   ├── slot-lock/                            # In-Memory SegmentTree & TTL (Port 8082)
 │   ├── payment-worker/                       # Webhook & Durable WAL Persistence (Port 8083)
 │   └── src/main/java/com/slotsync/
-│       └── SlotSyncAllServers.java           # Master runner for all 4 microservices
-└── frontend/                                 # React 19 + Vite Dashboard
-    ├── public/                               # Favicon and branding assets
-    ├── src/
-    │   ├── components/
-    │   │   ├── Header.jsx                    # Live train info & backend connectivity status
-    │   │   ├── TelemetryHUD.jsx              # QPS, P99 Latency, 0% double-booking gauge
-    │   │   ├── SeatMatrix.jsx                # 1,000-seat Segment Tree matrix (Coaches S1-S14)
-    │   │   ├── Simulators.jsx                # 3 buttons: Tatkal Rush, Fake Bots, Reset Train
-    │   │   ├── SecurityBotModal.jsx          # Token Bucket gauge & bot packet interceptor
-    │   │   ├── WaitingRoomHUD.jsx            # Dynamic turnstile (Direct Entry / Admitting / Closed)
-    │   │   ├── LogStream.jsx                 # Real-time microsecond audit log
-    │   │   └── BookingModal.jsx              # 2-step booking flow & digital ticket generator
-    │   ├── services/
-    │   │   ├── api.js                        # Microservices client with fallback engine
-    │   │   └── dsaEngine.js                  # In-browser client-side simulation engine
-    │   └── App.jsx                           # Root mission control orchestrator
-    └── index.html
+│       ├── SlotSyncAllServers.java           # Master runner for all 4 microservices
+│       └── SlotSyncDemoCLI.java              # Interactive Terminal Demo Suite
+└── planning/                                 # Engineering Specifications & System Design ADRs
+    ├── 01-PRD-and-Requirements.md
+    ├── 02-System-Architecture-HLD.md
+    ├── 03-DSA-Core-Engine-LLD.md
+    ├── 04-State-Machine-and-Failure-Modes.md
+    ├── 05-Implementation-Roadmap.md
+    └── 06-Backend-Architecture-and-Database.md
 ```
 
 ---
 
-## 🚀 Quick Start (One-Click Launch)
+## 🚀 Quick Start
 
 ### Prerequisites
 - **Java JDK 21+** (Java 23 recommended)
-- **Node.js 18+**
 
-### Single-Command Start (Windows)
-Double-click or run in your terminal:
+### 1. Run the Interactive Terminal Showcase
+Double-click or run:
+```cmd
+run-demo.bat
+```
+Launches the interactive ANSI terminal menu, letting you trigger real-time 100k concurrency benchmarks, bot mitigation tests, and ghost reaper countdowns interactively.
+
+### 2. Launch All 4 Live Microservices (HTTP Background Daemons)
+To start the live HTTP microservices suite on **Ports 8080, 8081, 8082, and 8083**:
 ```cmd
 start-all.bat
 ```
 
-This single command automatically:
-1. Starts the unified Java backend suite on **Ports 8080, 8081, 8082, and 8083**.
-2. Starts the React 19 Vite dev server on **Port 5173**.
-3. Launches your default web browser directly to `http://localhost:5173`.
-
-### Graceful Shutdown
-To stop all background microservices and dev servers:
+### 3. Graceful Shutdown
+To stop all background microservice servers:
 ```cmd
 stop-all.bat
 ```
+
+### 4. Technical Interview Preparation
+Before presenting this project to an interviewer, read the **[INTERVIEW_PITCH_GUIDE.md](./INTERVIEW_PITCH_GUIDE.md)** for:
+- The 2-minute opening elevator pitch
+- The Railway Station mental model for explaining microservices simply
+- Answers to the Top 10 hard questions (*"Why not Redis?"*, *"How does StampedLock work?"*, *"Why Project Loom?"*)
 
 ---
 
